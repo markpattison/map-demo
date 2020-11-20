@@ -13,8 +13,6 @@ Target.initEnvironment ()
 let sharedPath = Path.getFullName "./src/Shared"
 let serverPath = Path.getFullName "./src/Server"
 let deployDir = Path.getFullName "./deploy"
-let sharedTestsPath = Path.getFullName "./tests/Shared"
-let serverTestsPath = Path.getFullName "./tests/Server"
 
 let npm args workingDir =
     let npmPath =
@@ -71,15 +69,6 @@ Target.create "Run" (fun _ ->
     |> ignore
 )
 
-Target.create "RunTests" (fun _ ->
-    dotnet "build" sharedTestsPath
-    [ async { dotnet "watch run" serverTestsPath }
-      async { npm "run test:live" "." } ]
-    |> Async.Parallel
-    |> Async.RunSynchronously
-    |> ignore
-)
-
 open Fake.Core.TargetOperators
 
 "Clean"
@@ -90,9 +79,5 @@ open Fake.Core.TargetOperators
 "Clean"
     ==> "InstallClient"
     ==> "Run"
-
-"Clean"
-    ==> "InstallClient"
-    ==> "RunTests"
 
 Target.runOrDefaultWithArguments "Bundle"
