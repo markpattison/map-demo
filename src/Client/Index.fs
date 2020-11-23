@@ -4,15 +4,20 @@ open Elmish
 open Fable.Remoting.Client
 open Shared
 
+type Page =
+    | Introduction
+    | Shared
+    | Server
+    | ClientPlainMap
+    | ClientShowData
+
 type Model =
-    { Todos: Todo list
-      Input: string }
+    { CurrentPage: Page 
+      Data: int option }
 
 type Msg =
-    | GotTodos of Todo list
-    | SetInput of string
-    | AddTodo
-    | AddedTodo of Todo
+    | ShowPage of Page
+    | GotData of int
 
 let todosApi =
     Remoting.createApi()
@@ -21,94 +26,58 @@ let todosApi =
 
 let init(): Model * Cmd<Msg> =
     let model =
-        { Todos = []
-          Input = "" }
-    let cmd = Cmd.OfAsync.perform todosApi.getTodos () GotTodos
+        { CurrentPage = Introduction; Data = None }
+    let cmd = Cmd.OfAsync.perform todosApi.getData () GotData
     model, cmd
 
 let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     match msg with
-    | GotTodos todos ->
-        { model with Todos = todos }, Cmd.none
-    | SetInput value ->
-        { model with Input = value }, Cmd.none
-    | AddTodo ->
-        let todo = Todo.create model.Input
-        let cmd = Cmd.OfAsync.perform todosApi.addTodo todo AddedTodo
-        { model with Input = "" }, cmd
-    | AddedTodo todo ->
-        { model with Todos = model.Todos @ [ todo ] }, Cmd.none
+    | ShowPage page ->
+        { model with CurrentPage = page }, Cmd.none
+    | GotData data ->
+        { model with Data = Some data }, Cmd.none
 
+open Fable.Core.JsInterop
 open Fable.React
 open Fable.React.Props
 open Fulma
 
-let navBrand =
-    Navbar.Brand.div [ ] [
-        Navbar.Item.a [
-            Navbar.Item.Props [ Href "https://safe-stack.github.io/" ]
-            Navbar.Item.IsActive true
-        ] [
-            img [
-                Src "/favicon.png"
-                Alt "Logo"
-            ]
-        ]
-    ]
+importAll "./sass/main.sass"
 
-let containerBox (model : Model) (dispatch : Msg -> unit) =
-    Box.box' [ ] [
-        Content.content [ ] [
-            Content.Ol.ol [ ] [
-                for todo in model.Todos do
-                    li [ ] [ str todo.Description ]
-            ]
-        ]
-        Field.div [ Field.IsGrouped ] [
-            Control.p [ Control.IsExpanded ] [
-                Input.text [
-                  Input.Value model.Input
-                  Input.Placeholder "What needs to be done?"
-                  Input.OnChange (fun x -> SetInput x.Value |> dispatch) ]
-            ]
-            Control.p [ ] [
-                Button.a [
-                    Button.Color IsPrimary
-                    Button.Disabled (Todo.isValid model.Input |> not)
-                    Button.OnClick (fun _ -> dispatch AddTodo)
-                ] [
-                    str "Add"
-                ]
-            ]
-        ]
-    ]
+let menuLink currentPage dispatch label page =
+    Menu.Item.li
+      [ Menu.Item.IsActive (page = currentPage)
+        Menu.Item.Props [ OnClick (fun _ -> ShowPage page |> dispatch) ] ]
+      [ str label ]
+
+let menu currentPage dispatch =
+  let menuItem = menuLink currentPage dispatch
+  Menu.menu []
+    [ Menu.label []
+        [ str "Tutorial" ]
+      Menu.list []
+        [ menuItem "Introduction" Introduction
+          menuItem "Shared" Shared
+          menuItem "Server" Server
+          menuItem "Client - plain map" ClientPlainMap
+          menuItem "Client - show data" ClientShowData ] ]
+
+let pageContent (model : Model) (dispatch : Msg -> unit) =
+  match model.CurrentPage with
+  | Introduction -> div [] []
+  | Shared -> div [] []
+  | Server -> div [] []
+  | ClientPlainMap -> div [] []
+  | ClientShowData -> div [] []
 
 let view (model : Model) (dispatch : Msg -> unit) =
-    Hero.hero [
-        Hero.Color IsPrimary
-        Hero.IsFullHeight
-        Hero.Props [
-            Style [
-                Background """linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("https://unsplash.it/1200/900?random") no-repeat center center fixed"""
-                BackgroundSize "cover"
-            ]
-        ]
-    ] [
-        Hero.head [ ] [
-            Navbar.navbar [ ] [
-                Container.container [ ] [ navBrand ]
-            ]
-        ]
-
-        Hero.body [ ] [
-            Container.container [ ] [
-                Column.column [
-                    Column.Width (Screen.All, Column.Is6)
-                    Column.Offset (Screen.All, Column.Is3)
-                ] [
-                    Heading.p [ Heading.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ] [ str "map_demo" ]
-                    containerBox model dispatch
-                ]
-            ]
-        ]
-    ]
+  div []
+    [ Navbar.view
+      Section.section []
+        [ Container.container []
+            [ Columns.columns []
+                [ Column.column
+                    [ Column.Width (Screen.All, Column.Is3) ]
+                    [ menu model.CurrentPage dispatch ]
+                  Column.column []
+                    [ pageContent model dispatch ] ] ] ] ]

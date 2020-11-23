@@ -1,0 +1,27 @@
+// Colors
+$orange: #EE9500
+$primary: $orange
+$black: #202020
+
+@import '../../../node_modules/bulma/bulma'
+
+.navbar-bg
+  background-color: $primary
+  .nav
+    background-color: $black
+  .title
+    color: #FFFFFF
+    font-weight: 600
+
+.twitter
+  color: #55acee !important // Override bulma
+  border-color: #55acee
+
+.github
+  color: $black !important // Override bulma
+  border-color: $black
+
+p
+  margin-bottom: 1.5em
+pre
+  margin-bottom: 1.5em
