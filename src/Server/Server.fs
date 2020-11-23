@@ -7,7 +7,7 @@ open Saturn
 open Shared
 
 let todosApi =
-    { getData = fun () -> async { return 1 }
+    { getData = fun () -> async { return [||] }
     }
 
 let webApp =

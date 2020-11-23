@@ -14,8 +14,8 @@ let todosApi =
 let init(): Model * Cmd<Msg> =
     let model =
         { CurrentPage = Introduction; Data = None }
-    let cmd = Cmd.OfAsync.perform todosApi.getData () GotData
-    model, cmd
+    //let cmd = Cmd.OfAsync.perform todosApi.getData () GotData
+    model, Cmd.none
 
 let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     match msg with
