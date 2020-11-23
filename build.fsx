@@ -5,8 +5,6 @@
 open Fake.Core
 open Fake.DotNet
 open Fake.IO
-open Farmer
-open Farmer.Builders
 
 Target.initEnvironment ()
 
@@ -45,21 +43,6 @@ Target.create "Bundle" (fun _ ->
     npm "run build" "."
 )
 
-Target.create "Azure" (fun _ ->
-    let web = webApp {
-        name "map_demo"
-        zip_deploy "deploy"
-    }
-    let deployment = arm {
-        location Location.WestEurope
-        add_resource web
-    }
-
-    deployment
-    |> Deploy.execute "map_demo" Deploy.NoParameters
-    |> ignore
-)
-
 Target.create "Run" (fun _ ->
     dotnet "build" sharedPath
     [ async { dotnet "watch run" serverPath }
@@ -74,7 +57,6 @@ open Fake.Core.TargetOperators
 "Clean"
     ==> "InstallClient"
     ==> "Bundle"
-    ==> "Azure"
 
 "Clean"
     ==> "InstallClient"
