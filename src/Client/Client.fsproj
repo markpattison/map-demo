@@ -11,7 +11,7 @@
         <Compile Include="State.fs" />
         <Compile Include="Markdown.fs" />
         <Compile Include="Navbar.fs" />
-        <Compile Include="Introduction.fs" />
+        <Compile Include="Blog.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />
     </ItemGroup>

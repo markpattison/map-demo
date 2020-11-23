@@ -29,11 +29,11 @@ let menu currentPage dispatch =
 
 let pageContent (model : Model) (dispatch : Msg -> unit) =
   match model.CurrentPage with
-  | Introduction -> Markdown.parseAsReactEl "" Introduction.markdown
-  | Shared -> div [] []
-  | Server -> div [] []
-  | ClientPlainMap -> div [] []
-  | ClientShowData -> div [] []
+  | Introduction -> Markdown.parseAsReactEl "" Blog.introduction
+  | Shared -> Markdown.parseAsReactEl "" Blog.shared
+  | Server -> Markdown.parseAsReactEl "" Blog.server
+  | ClientPlainMap -> Markdown.parseAsReactEl "" Blog.clientPlainMap
+  | ClientShowData -> Markdown.parseAsReactEl "" Blog.clientShowData
 
 let view (model : Model) (dispatch : Msg -> unit) =
   div []
