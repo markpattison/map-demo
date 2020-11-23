@@ -15,6 +15,7 @@ nuget Fable.Mocha
 nuget Fable.React
 nuget Fable.Remoting.Client
 nuget Fulma
+nuget FSharp.Data
 
 group Build
     source https://api.nuget.org/v3/index.json
