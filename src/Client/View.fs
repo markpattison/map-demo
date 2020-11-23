@@ -1,46 +1,11 @@
-module Index
-
-open Elmish
-open Fable.Remoting.Client
-open Shared
-
-type Page =
-    | Introduction
-    | Shared
-    | Server
-    | ClientPlainMap
-    | ClientShowData
-
-type Model =
-    { CurrentPage: Page 
-      Data: int option }
-
-type Msg =
-    | ShowPage of Page
-    | GotData of int
-
-let todosApi =
-    Remoting.createApi()
-    |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<ITodosApi>
-
-let init(): Model * Cmd<Msg> =
-    let model =
-        { CurrentPage = Introduction; Data = None }
-    let cmd = Cmd.OfAsync.perform todosApi.getData () GotData
-    model, cmd
-
-let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
-    match msg with
-    | ShowPage page ->
-        { model with CurrentPage = page }, Cmd.none
-    | GotData data ->
-        { model with Data = Some data }, Cmd.none
+module View
 
 open Fable.Core.JsInterop
 open Fable.React
 open Fable.React.Props
 open Fulma
+
+open Types
 
 importAll "./sass/main.sass"
 
