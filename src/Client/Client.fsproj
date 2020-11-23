@@ -9,6 +9,7 @@
         <None Include="paket.references" />
         <Compile Include="Types.fs" />
         <Compile Include="State.fs" />
+        <Compile Include="Markdown.fs" />
         <Compile Include="Navbar.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />
