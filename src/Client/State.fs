@@ -6,15 +6,15 @@ open Fable.Remoting.Client
 open Shared
 open Types
 
-let todosApi =
+let covidMapApi =
     Remoting.createApi()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.buildProxy<ITodosApi>
+    |> Remoting.buildProxy<ICovidMapApi>
 
 let init(): Model * Cmd<Msg> =
     let model =
         { CurrentPage = Introduction; Data = None }
-    //let cmd = Cmd.OfAsync.perform todosApi.getData () GotData
+    //let cmd = Cmd.OfAsync.perform covidMapApi.getData () GotData
     model, Cmd.none
 
 let update (msg: Msg) (model: Model): Model * Cmd<Msg> =

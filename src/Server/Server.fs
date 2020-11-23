@@ -6,14 +6,14 @@ open Saturn
 
 open Shared
 
-let todosApi =
+let covidMapApi =
     { getData = fun () -> async { return [||] }
     }
 
 let webApp =
     Remoting.createApi()
     |> Remoting.withRouteBuilder Route.builder
-    |> Remoting.fromValue todosApi
+    |> Remoting.fromValue covidMapApi
     |> Remoting.buildHttpHandler
 
 let app =

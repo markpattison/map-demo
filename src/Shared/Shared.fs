@@ -37,5 +37,5 @@ module Route =
     let builder typeName methodName =
         sprintf "/api/%s/%s" typeName methodName
 
-type ITodosApi =
+type ICovidMapApi =
     { getData : unit -> Async<Area []> }

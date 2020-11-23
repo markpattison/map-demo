@@ -26,24 +26,24 @@ Finally, I've used population estimates from the [ONS](https://www.ons.gov.uk/pe
 let shared = """
 ## Shared data types and API
 
-Here we'll look at the shape of the data that the server will be providing to the client.
+Here we'll look at the shape of the data that the server will be providing to the client.  One of the SAFE Stack's best features is the extremely concise way in which we can specify an API.
 
 Fundamentally our data will be a list of local authority areas, with an attaching ONS code (a standard way of referencing administrative areas in the UK), local authority name, boundary data (to draw the area on a map) and covid data.
 
-This code lives in the `Shared.fs` file which is referenced by the both the server and client projects.  This guarantees that our data types match.
+This code all lives in the `Shared.fs` file which is referenced by the both the server and client projects.  This guarantees that our data types match.
 
 #### Boundary data
 
-In general, a geographic region can be made up of several disconnected areas.  Each of these could in turn have holes within them.  This can be mapped nicely to F# as follows:
+In general, a geographic region can be made up of several disconnected areas.  Each of these could in turn have holes within them.  This can be mapped nicely to F# in the following way.
 
-A `Loop` is a simple boundary made up of an array of latitude/longitude pairs.
+A `Loop` is a simple boundary made up of an array of latitude/longitude pairs: <img style="float: right;" src="shape1.png">
 
     type Loop =
         {
             LatLongs: (float * float) []
         }
 
-A `Shape` has one outer `Loop` and zero or more holes, which are themselves represented as `Loop` elemenets.
+A `Shape` has one outer `Loop` and zero or more holes, which are themselves represented as `Loop` elements: <img style="float: right;" src="shape2.png">
 
     type Shape =
         {
@@ -51,7 +51,7 @@ A `Shape` has one outer `Loop` and zero or more holes, which are themselves repr
             Holes: Loop []
         }
 
-A `Boundary` is made up of at least one `Shape`.
+A `Boundary` is made up of at least one `Shape`: <img style="float: right;" src="shape3.png">
 
     type Boundary =
         {
@@ -71,11 +71,21 @@ We'll use a simple data structure to hold a few weeks' data:
             WeekToNov13: float option
         }
 
+Finally we just need another record type to hold all the relevant data for a single area:
+
+    type Area =
+        {
+            ONSCode: string
+            Name: string
+            Boundary: Boundary
+            Data: CovidRates
+        }
+
 #### API
 
 The following interface specifies our API.  In our case it's extremely simple, with only one method - to retrieve all the data.
 
-    type ITodosApi =
+    type ICovidMapApi =
         { getData : unit -> Async<Area []> }
 
 Again, this is shared between the client and server implementations - [Fable Remoting](https://zaid-ajaj.github.io/Fable.Remoting/) will magically take care of the rest!
