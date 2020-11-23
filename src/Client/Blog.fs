@@ -95,6 +95,25 @@ Again, this is shared between the client and server implementations - [Fable Rem
 
 let server = """
 ## Server implementation
+
+#### Data
+
+We have three data files (geographic boundaries, Covid rates, population estimates) in the `src\Server\data` folder.  In a production app we would probably reload the Covid data every few hours and cache it in between, but for this walkthrough we'll use static data.
+
+#### Reading the boundaries
+
+
+
+#### Reading Covid rates and populations
+
+
+
+#### Transforming case data
+
+
+
+#### Combining the data
+
 """
 
 
