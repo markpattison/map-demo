@@ -71,11 +71,15 @@ We'll use a simple data structure to hold a few weeks' data:
             WeekToNov13: float option
         }
 
+A single-case discriminated union will help keep our data type-safe:
+
+    type ONSCOde = | ONSCode of string
+
 Finally we just need another record type to hold all the relevant data for a single area:
 
     type Area =
         {
-            ONSCode: string
+            ONSCode: ONSCOde
             Name: string
             Boundary: Boundary
             Data: CovidRates

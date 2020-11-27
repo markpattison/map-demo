@@ -25,9 +25,11 @@ type CovidRates =
         WeekToNov13: float option
     }
 
+type ONSCOde = | ONSCode of string
+
 type Area =
     {
-        ONSCode: string
+        ONSCode: ONSCOde
         Name: string
         Boundary: Boundary
         Data: CovidRates
