@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="Populations.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
   <ItemGroup>
