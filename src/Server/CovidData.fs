@@ -5,16 +5,18 @@ open System
 open FSharp.Data
 open FSharp.Data.CsvExtensions
 
+open Shared
+
 type CovidData =
     {
-        OnsCode: string
+        OnsCode: ONSCode
         Date: DateTime
         NewCasesBySpecimenDate: float
     }
 
 let private readRow (row: CsvRow) =
     {
-        OnsCode = row?areaCode
+        OnsCode = ONSCode row?areaCode
         Date = row?date.AsDateTime()
         NewCasesBySpecimenDate = row?newCasesBySpecimenDate.AsFloat()
     }
