@@ -9,14 +9,14 @@ open Shared
 
 type CovidData =
     {
-        OnsCode: ONSCode
+        ONSCode: ONSCode
         Date: DateTime
         NewCasesBySpecimenDate: float
     }
 
 let private readRow (row: CsvRow) =
     {
-        OnsCode = ONSCode row?areaCode
+        ONSCode = ONSCode row?areaCode
         Date = row?date.AsDateTime()
         NewCasesBySpecimenDate = row?newCasesBySpecimenDate.AsFloat()
     }
