@@ -8,7 +8,7 @@ open Saturn
 
 open Shared
 
-let dates = [ DateTime(2020, 10, 30) ]
+let dates = [ DateTime(2020, 11, 19); DateTime(2020, 11, 20); DateTime(2020, 11, 21) ]
 
 let getAllData() =
 
@@ -23,6 +23,7 @@ let getAllData() =
 
 let covidMapApi =
     { getData = fun () -> async { return getAllData() }
+      getDates = fun () -> async { return List.toArray dates }
     }
 
 let webApp =
