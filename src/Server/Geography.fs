@@ -8,7 +8,7 @@ open Shared
 let codeAttribute = "lad19cd"
 let nameAttribute = "lad19nm"
 
-let extractPoints (ring: LinearRing) : Loop =
+let extractPoints (ring: LinearRing) =
     let coords =
         ring.Coordinates
         |> Seq.map (fun c -> c.Latitude, c.Longitude)

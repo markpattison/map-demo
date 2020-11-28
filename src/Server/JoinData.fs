@@ -5,14 +5,14 @@ open System
 open CovidData
 open Shared
 
-let private totalCasesInWeekTo (covidData: CovidData []) (date: DateTime) =
+let private totalCasesInWeekTo covidData (date: DateTime) =
     let weekBefore = date.AddDays(-6.0)
 
     covidData
     |> Seq.filter (fun cd -> cd.Date >= weekBefore && cd.Date <= date)
     |> Seq.sumBy (fun cd -> cd.NewCasesBySpecimenDate)
 
-let private extractRates (dates: DateTime list) (areaData: CovidData []) population =
+let private extractRates dates areaData population =
 
     let weeklyRates =
         dates
@@ -22,7 +22,7 @@ let private extractRates (dates: DateTime list) (areaData: CovidData []) populat
         WeeklyCasesPer100k = Map.ofList weeklyRates
     }
 
-let join (dates: DateTime list) (covidData: CovidData []) (populations: Map<ONSCode, float>) (boundaries: (ONSCode * string * Boundary) []) : Area [] =
+let join dates (covidData: CovidData []) populations boundaries =
 
     let getArea (onsCode, name, boundary) =
 

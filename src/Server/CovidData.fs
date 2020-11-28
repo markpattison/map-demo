@@ -24,7 +24,7 @@ let private readRow (row: CsvRow) =
             if String.IsNullOrWhiteSpace(newCasesBySpecimenDate) then 0.0 else newCasesBySpecimenDate.AsFloat()
     }
 
-let read (filepath: string) (startDate: DateTime) (endDate: DateTime) =
+let read (filepath: string) startDate endDate =
 
     let dateFilter (row: CsvRow) =
         let date = row?date.AsDateTime()
