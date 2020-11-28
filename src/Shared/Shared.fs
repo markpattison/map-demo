@@ -20,9 +20,7 @@ type Boundary =
 
 type CovidRates =
     {
-        WeekToOct30: float option
-        WeekToNov06: float option
-        WeekToNov13: float option
+        WeeklyCasesPer100k: Map<DateTime, float>
     }
 
 type ONSCode = | ONSCode of string
@@ -32,7 +30,7 @@ type Area =
         ONSCode: ONSCode
         Name: string
         Boundary: Boundary
-        Data: CovidRates
+        Data: CovidRates option
     }
 
 module Route =

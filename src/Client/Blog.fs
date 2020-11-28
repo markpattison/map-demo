@@ -62,27 +62,25 @@ This model is rich enough to represent any geographic area.
 
 #### Covid data
 
-We'll use a simple data structure to hold a few weeks' data:
+We'll use a simple data structure to hold some weekly data:
 
     type CovidRates =
         {
-            WeekToOct30: float option
-            WeekToNov06: float option
-            WeekToNov13: float option
+            WeeklyCasesPer100k: Map<DateTime, float>
         }
 
 A single-case discriminated union will help keep our data type-safe:
 
     type ONSCOde = | ONSCode of string
 
-Finally we just need another record type to hold all the relevant data for a single area:
+Finally we just need another record type to hold all the relevant data for a single area.  We'll use an option type for the rates in case we have missing data for some areas:
 
     type Area =
         {
             ONSCode: ONSCOde
             Name: string
             Boundary: Boundary
-            Data: CovidRates
+            Data: CovidRates option
         }
 
 #### API
