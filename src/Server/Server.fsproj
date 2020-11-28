@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <None Include="data\Local_Authority_Districts__December_2019__Boundaries_UK_BUC.kml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="data\ltla_2020-11-22.csv" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="data\population_estimates.csv" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="CovidData.fs" />
     <Compile Include="Populations.fs" />
     <Compile Include="Geography.fs" />
