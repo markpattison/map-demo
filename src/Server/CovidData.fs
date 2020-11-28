@@ -15,10 +15,13 @@ type CovidData =
     }
 
 let private readRow (row: CsvRow) =
+    let newCasesBySpecimenDate = row?newCasesBySpecimenDate
+
     {
         ONSCode = ONSCode row?areaCode
         Date = row?date.AsDateTime()
-        NewCasesBySpecimenDate = row?newCasesBySpecimenDate.AsFloat()
+        NewCasesBySpecimenDate = 
+            if String.IsNullOrWhiteSpace(newCasesBySpecimenDate) then 0.0 else newCasesBySpecimenDate.AsFloat()
     }
 
 let read (filepath: string) (startDate: DateTime) (endDate: DateTime) =
