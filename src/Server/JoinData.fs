@@ -6,7 +6,7 @@ open CovidData
 open Shared
 
 let private totalCasesInWeekTo (covidData: CovidData []) (date: DateTime) =
-    let weekBefore = date.AddDays(-7.0)
+    let weekBefore = date.AddDays(-6.0)
 
     covidData
     |> Seq.filter (fun cd -> cd.Date >= weekBefore && cd.Date <= date)
