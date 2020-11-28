@@ -8,6 +8,7 @@
     <None Include="paket.references" />
     <Compile Include="CovidData.fs" />
     <Compile Include="Populations.fs" />
+    <Compile Include="Geography.fs" />
     <Compile Include="JoinData.fs" />
     <Compile Include="Server.fs" />
   </ItemGroup>
