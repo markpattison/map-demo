@@ -106,11 +106,143 @@ We have three data files (geographic boundaries, Covid rates, population estimat
 
 #### Reading the boundaries
 
+This section mosly involves just converting from one domain model to another.
 
+The geographic data is stored in a KML file.  This is a type of XML, so we can easily open and inspect it, which helped with understanding the hierarchy of elements.
+
+To read the file more conveniently we're using [SharpKML](https://github.com/samcragg/sharpkml) which provides a nice .NET wrapper around the [KML format](https://developers.google.com/kml/documentation/kml_tut).
+
+Starting from the top down, we want to open a file and extract the boundary data (plus ONS codes and names):
+
+    let readBoundaries (filename: string) =
+        use reader = System.IO.File.OpenRead(filename)
+
+        let kmlFile = SharpKml.Engine.KmlFile.Load(reader)
+        let kml = kmlFile.Root :?> Kml
+
+        kml.Flatten()
+        |> Seq.choose asPlacemark
+        |> Seq.map extractCodeNameAndCoords
+        |> Seq.toArray
+
+The `asPlacemark` function just keeps everything from the file which is a `Placemark`, which represents a point or area on Earth.  
+
+    let asPlacemark (e: Element) =
+        match e with
+        | :? Placemark as p -> Some p
+        | _ -> None
+
+Now the first `Placemark` entry in our file looks like this.  We want to extract the area code and name as well as the boundary details (cut short here for brevity).
+
+      <Placemark>
+    	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
+    	<ExtendedData><SchemaData schemaUrl="#Local_Authority_Districts__December_2019__Boundaries_UK_BUC">
+    		<SimpleData name="objectid">1</SimpleData>
+    		<SimpleData name="lad19cd">E06000001</SimpleData>
+    		<SimpleData name="lad19nm">Hartlepool</SimpleData>
+    		<SimpleData name="lad19nmw"></SimpleData>
+    		<SimpleData name="bng_e">447160</SimpleData>
+    		<SimpleData name="bng_n">531474</SimpleData>
+    		<SimpleData name="long">-1.27018</SimpleData>
+    		<SimpleData name="lat">54.67614</SimpleData>
+    		<SimpleData name="st_areashape">96845510.2463086</SimpleData>
+    		<SimpleData name="st_lengthshape">50305.3250576014</SimpleData>
+    	</SchemaData></ExtendedData>
+          <Polygon><outerBoundaryIs><LinearRing><coordinates>-1.24099446513821,54.723193897637 ...</coordinates></LinearRing></outerBoundaryIs></Polygon>
+      </Placemark>
+
+The `extractCodeNameAndCoords` function does this for us, calling `extractBoundary` to get the boundary details:
+
+    let codeAttribute = "lad19cd"
+    let nameAttribute = "lad19nm"
+
+    let extractCodeNameAndCoords (p: Placemark) =
+        let schemaData = Seq.head p.ExtendedData.SchemaData
+
+        let codeData = schemaData.SimpleData |> Seq.find (fun sd -> sd.Name = codeAttribute)
+        let areaCode = ONSCode codeData.Text
+
+        let nameData = schemaData.SimpleData |> Seq.find (fun sd -> sd.Name = nameAttribute)
+        let name = nameData.Text   
+
+        let boundary = { Shapes = extractBoundary p.Geometry }
+
+        (areaCode, name, boundary)
+
+It turns out that a `Geometry` object can either be a single `Polygon` or a `MultipleGeometry`, which contains multiple sub-`Geometry` objects.  In F# this can naturally be handled with recursion:
+
+    let rec extractBoundary (g: Geometry) =
+        match g with
+        | :? Polygon as poly -> Array.singleton (extractShape poly)
+        | :? MultipleGeometry as multi -> Seq.collect extractBoundary multi.Geometry |> Seq.toArray
+        | _ -> failwith "unknown geometry"
+
+Now we just need to turn the KML `Polygon` object into our own `Shape` (with an `InnerBoundary` being a "hole" in an area):
+
+    let extractShape (poly: Polygon) =
+        {
+            OuterBoundary = poly.OuterBoundary.LinearRing |> extractPoints
+            Holes =
+                poly.InnerBoundary
+                |> Seq.map (fun innerBoundary -> extractPoints innerBoundary.LinearRing)
+                |> Seq.toArray
+        }
+
+Finally we just need to convert the list of points into our `Loop` type:
+
+    let extractPoints (ring: LinearRing) =
+        {
+            LatLongs =
+                ring.Coordinates
+                |> Seq.map (fun c -> c.Latitude, c.Longitude)
+                |> Seq.toArray
+        }
 
 #### Reading Covid rates and populations
 
+We're using the CSV Parser from the [FSharp.Data](https://fsharp.github.io/FSharp.Data/) package to read the CSV file.
 
+First we'll create a type to represent the data from one row of the file (i.e. a unique combination of area and date):
+
+    type CovidData =
+        {
+            ONSCode: ONSCode
+            Date: DateTime
+            NewCasesBySpecimenDate: float
+        }
+
+Next up is a function to read that data from an actual CSV row.  I found that some rows had blanks which I've replaced here with zero values.
+
+Yes, the number of cases per day is really an integer, but I decided to store everything as floats to keep things simple.
+
+    let private readRow (row: CsvRow) =
+        let newCasesBySpecimenDate = row?newCasesBySpecimenDate
+
+        {
+            ONSCode = ONSCode row?areaCode
+            Date = row?date.AsDateTime()
+            NewCasesBySpecimenDate = 
+                if String.IsNullOrWhiteSpace(newCasesBySpecimenDate) then 0.0 else newCasesBySpecimenDate.AsFloat()
+        }
+
+Now we're ready to read in the file and convert it to an array of data using the above function.
+
+As there are something like 120k rows in the original data, there's a filter so we can only keep the range of dates we're interested in.
+
+    let read (filepath: string) startDate endDate =
+
+        let dateFilter (row: CsvRow) =
+            let date = row?date.AsDateTime()
+            date >= startDate && date <= endDate
+
+        let csv = CsvFile.Load(filepath)
+
+        csv.Rows
+        |> Seq.filter dateFilter
+        |> Seq.map readRow
+        |> Seq.toArray
+
+Reading the population data is very similar so I haven't copied it here.
 
 #### Transforming case data
 

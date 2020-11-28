@@ -9,23 +9,20 @@ let codeAttribute = "lad19cd"
 let nameAttribute = "lad19nm"
 
 let extractPoints (ring: LinearRing) =
-    let coords =
-        ring.Coordinates
-        |> Seq.map (fun c -> c.Latitude, c.Longitude)
-        |> Seq.toArray
-    
-    { LatLongs = coords }
+    {
+        LatLongs =
+            ring.Coordinates
+            |> Seq.map (fun c -> c.Latitude, c.Longitude)
+            |> Seq.toArray
+    }
 
 let extractShape (poly: Polygon) =
-    let outer = poly.OuterBoundary.LinearRing |> extractPoints
-    let inners =
-        poly.InnerBoundary
-        |> Seq.map (fun innerBoundary -> extractPoints innerBoundary.LinearRing)
-        |> Seq.toArray
-
     {
-        OuterBoundary = outer
-        Holes = inners
+        OuterBoundary = poly.OuterBoundary.LinearRing |> extractPoints
+        Holes =
+            poly.InnerBoundary
+            |> Seq.map (fun innerBoundary -> extractPoints innerBoundary.LinearRing)
+            |> Seq.toArray
     }
 
 let rec extractBoundary (g: Geometry) =
@@ -34,7 +31,7 @@ let rec extractBoundary (g: Geometry) =
     | :? MultipleGeometry as multi -> Seq.collect extractBoundary multi.Geometry |> Seq.toArray
     | _ -> failwith "unknown geometry"
 
-let extractNameAndCoords (p: Placemark) =
+let extractCodeNameAndCoords (p: Placemark) =
     let schemaData = Seq.head p.ExtendedData.SchemaData
 
     let codeData = schemaData.SimpleData |> Seq.find (fun sd -> sd.Name = codeAttribute)
@@ -58,13 +55,7 @@ let readBoundaries (filename: string) =
     let kmlFile = SharpKml.Engine.KmlFile.Load(reader)
     let kml = kmlFile.Root :?> Kml
 
-    let placemarks =
-        kml.Flatten()
-        |> Seq.choose asPlacemark
-
-    let boundaries =
-        placemarks
-        |> Seq.map extractNameAndCoords
-        |> Seq.toArray
-
-    boundaries
+    kml.Flatten()
+    |> Seq.choose asPlacemark
+    |> Seq.map extractCodeNameAndCoords
+    |> Seq.toArray
