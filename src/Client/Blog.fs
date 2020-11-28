@@ -244,11 +244,50 @@ As there are something like 120k rows in the original data, there's a filter so 
 
 Reading the population data is very similar so I haven't copied it here.
 
-#### Transforming case data
-
-
-
 #### Combining the data
+
+A couple of straightforward functions are used to extract the weekly total of new cases per 100k population for a particular area and list of dates.
+
+    let private totalCasesInWeekTo covidData (date: DateTime) =
+        let weekBefore = date.AddDays(-6.0)
+
+        covidData
+        |> Seq.filter (fun cd -> cd.Date >= weekBefore && cd.Date <= date)
+        |> Seq.sumBy (fun cd -> cd.NewCasesBySpecimenDate)
+
+    let private extractRates dates areaData population =
+
+        let weeklyRates =
+            dates
+            |> List.map (fun date -> date, (totalCasesInWeekTo areaData date) * 100000.0 / population)
+
+        {
+            WeeklyCasesPer100k = Map.ofList weeklyRates
+        }
+
+Lastly, we can join the various data together to end up with an array of `Area` records which will be returned by our API:
+
+    let join dates (covidData: CovidData []) populations boundaries =
+
+        let getArea (onsCode, name, boundary) =
+
+            let population = Map.tryFind onsCode populations
+            let areaData = covidData |> Array.filter (fun cd -> cd.ONSCode = onsCode)
+
+            let covidRates =
+
+                match population, Array.isEmpty areaData with
+                | Some pop, false when pop > 0.0 -> extractRates dates areaData pop |> Some
+                | _ -> None
+
+            {
+                ONSCode = onsCode
+                Name = name
+                Boundary = boundary
+                Data = covidRates
+            }
+
+        boundaries |> Array.map getArea
 
 """
 
