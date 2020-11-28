@@ -85,10 +85,12 @@ Finally we just need another record type to hold all the relevant data for a sin
 
 #### API
 
-The following interface specifies our API.  In our case it's extremely simple, with only one method - to retrieve all the data.
+The following interface specifies our API.  In our case it's extremely simple, with only two methods - one to get the list of dates at which we'll have data, and one to fetch the data itself.
 
     type ICovidMapApi =
-        { getData : unit -> Async<Area []> }
+        { getDates : unit -> Async<DateTime []>
+          getData : unit -> Async<Area []>
+        }
 
 Again, this is shared between the client and server implementations - [Fable Remoting](https://zaid-ajaj.github.io/Fable.Remoting/) will magically take care of the rest!
 

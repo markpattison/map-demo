@@ -22,8 +22,8 @@ let getAllData() =
     JoinData.join dates covidData populations boundaries
 
 let covidMapApi =
-    { getData = fun () -> async { return getAllData() }
-      getDates = fun () -> async { return List.toArray dates }
+    { getDates = fun () -> async { return List.toArray dates }
+      getData = fun () -> async { return getAllData() }
     }
 
 let webApp =

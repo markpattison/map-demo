@@ -38,6 +38,6 @@ module Route =
         sprintf "/api/%s/%s" typeName methodName
 
 type ICovidMapApi =
-    { getData : unit -> Async<Area []>
-      getDates : unit -> Async<DateTime []>
+    { getDates : unit -> Async<DateTime []>
+      getData : unit -> Async<Area []>
     }
