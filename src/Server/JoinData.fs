@@ -22,7 +22,7 @@ let private extractRates (dates: DateTime list) (areaData: CovidData []) populat
         WeeklyCasesPer100k = Map.ofList weeklyRates
     }
 
-let joinData (dates: DateTime list) (covidData: CovidData []) (populations: Map<ONSCode, float>) (boundaries: (ONSCode * string * Boundary) []) : Area [] =
+let join (dates: DateTime list) (covidData: CovidData []) (populations: Map<ONSCode, float>) (boundaries: (ONSCode * string * Boundary) []) : Area [] =
 
     let getArea (onsCode, name, boundary) =
 
