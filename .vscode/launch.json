@@ -11,7 +11,7 @@
             "preLaunchTask": "build server",
             "program": "${workspaceFolder}/src/Server/bin/Debug/netcoreapp3.1/Server.dll",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/src/Server/bin/Debug/netcoreapp3.1",
             "stopAtEntry": false,
             "console": "internalConsole"
         }
