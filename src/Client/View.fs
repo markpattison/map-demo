@@ -25,7 +25,8 @@ let menu currentPage dispatch =
           menuItem "Shared" Shared
           menuItem "Server" Server
           menuItem "Client - plain map" ClientPlainMap
-          menuItem "Client - show data" ClientShowData ] ]
+          menuItem "Client - show data" ClientShowData
+          menuItem "Results" Results ] ]
 
 let pageContent (model : Model) (dispatch : Msg -> unit) =
   match model.CurrentPage with
@@ -34,6 +35,9 @@ let pageContent (model : Model) (dispatch : Msg -> unit) =
   | Server -> Markdown.parseAsReactEl "" Blog.server
   | ClientPlainMap -> Markdown.parseAsReactEl "" Blog.clientPlainMap
   | ClientShowData -> Markdown.parseAsReactEl "" Blog.clientShowData
+  | Results -> div []
+                [ Markdown.parseAsReactEl "" Blog.results
+                  Map.view model dispatch ]
 
 let view (model : Model) (dispatch : Msg -> unit) =
   div []

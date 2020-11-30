@@ -8,10 +8,12 @@ type Page =
     | Server
     | ClientPlainMap
     | ClientShowData
+    | Results
 
 type Model =
     { CurrentPage: Page 
-      Data: int option }
+      Data: int option
+      MapBounds: (float * float) * (float * float) }
 
 type Msg =
     | ShowPage of Page

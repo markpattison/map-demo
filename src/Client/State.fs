@@ -11,9 +11,11 @@ let covidMapApi =
     |> Remoting.withRouteBuilder Route.builder
     |> Remoting.buildProxy<ICovidMapApi>
 
+let defaultBounds = (51.0, -5.0), (55.0, 1.5)
+
 let init(): Model * Cmd<Msg> =
     let model =
-        { CurrentPage = Introduction; Data = None }
+        { CurrentPage = Introduction; Data = None; MapBounds = defaultBounds }
     //let cmd = Cmd.OfAsync.perform covidMapApi.getData () GotData
     model, Cmd.none
 

@@ -295,15 +295,26 @@ Lastly, we can join the various data together to end up with an array of `Area` 
 let clientPlainMap = """
 ## Client: Drawing a map
 
+Leaflet & React Leaflet & Fable React Leaflet
+
     npm install -s leaflet
-    npm install -s react-leaflet
+    npm install -s react-leaflet@2.7.0 (v3 has breaking changes)
     npm install -s react-leaflet-control
 
-    paket add Fable.ReactLeaflet
+    paket add Fable.ReactLeaflet (implies Fable.Leaflet)
+
+stuff from : https://leafletjs.com/examples/quick-start/
+
+Model: MapBounds & default values
+Map.fs
 
 """
 
 
 let clientShowData = """
 ## Client: Showing our data
+"""
+
+let results = """
+## The resulting map
 """
