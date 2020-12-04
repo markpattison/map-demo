@@ -289,6 +289,71 @@ Lastly, we can join the various data together to end up with an array of `Area` 
 
         boundaries |> Array.map getArea
 
+#### Implementing and testing the API
+
+Bringing this all together in our server implementation using some example dates, we just need to implement the API by reading the relevant data for Covid rates (just keeping relevant dates), populations and geographical boundaries and calling the join function above:
+
+    let dates = [ DateTime(2020, 11, 19); DateTime(2020, 11, 20); DateTime(2020, 11, 21) ]
+
+    let getAllData() =
+
+        let firstDate = (List.min dates).AddDays(-8.0)
+        let lastDate = List.max dates
+        let covidData = CovidData.read "./data/ltla_2020-11-22.csv" firstDate lastDate
+
+        let populations = Populations.read "./data/population_estimates.csv"
+        let boundaries = Geography.readBoundaries "./data/Local_Authority_Districts__December_2019__Boundaries_UK_BUC.kml"
+
+        JoinData.join dates covidData populations boundaries
+
+    let covidMapApi =
+        { getDates = fun () -> async { return List.toArray dates }
+          getData = fun () -> async { return getAllData() }
+        }
+
+Our API should now be working.  Assuming we've run our project (e.g. with `dotnet fake build -t run`) we can test it using something like [Postman](https://www.postman.com/) or even just by typing the automatically-generated URL into a browser.
+
+Calling `http://localhost:8085/api/ICovidMapApi/getDates` returns (in prettified form):
+
+    [
+        "2020-11-19T00:00:00.0000000",
+        "2020-11-20T00:00:00.0000000",
+        "2020-11-21T00:00:00.0000000"
+    ]
+
+And calling `http://localhost:8085/api/ICovidMapApi/getData` returns 1MB of data which looks like:
+
+    [
+        {
+            "ONSCode": {
+                "ONSCode": "E06000001"
+            },
+            "Name": "Hartlepool",
+            "Boundary": {
+                "Shapes": [
+                    {
+                        "OuterBoundary": {
+                            "LatLongs": [
+                                [
+                                    54.723193897637,
+                                    -1.24099446513821
+                                ],
+                                ...
+                            ]
+                        },
+                        "Holes": []
+                    }
+                ]
+            },
+            "Data": {
+                "WeeklyCasesPer100k": {
+                    "\"2020-11-19T00:00:00.0000000\"": 458.02504724384227,
+                    "\"2020-11-20T00:00:00.0000000\"": 404.64217460469985,
+                    "\"2020-11-21T00:00:00.0000000\"": 348.0563296072088
+                }
+            }
+        },
+        ...
 """
 
 
@@ -351,7 +416,7 @@ Following the [example](https://react-leaflet.js.org/docs/start-setup) we can ad
               []
           ]
 
-Here's our map:
+Here's our map - not bad for about 10 lines of code!
 """
 
 
