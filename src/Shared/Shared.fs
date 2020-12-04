@@ -37,6 +37,8 @@ module Route =
     let builder typeName methodName =
         sprintf "/api/%s/%s" typeName methodName
 
+// fsharplint:disable RecordFieldNames
+
 type ICovidMapApi =
     { getDates : unit -> Async<DateTime []>
       getData : unit -> Async<Area []>

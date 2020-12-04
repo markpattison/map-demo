@@ -3,11 +3,10 @@ module Map
 open Fable.React
 open Fable.React.Props
 
+open LeafletHelpers
 open Types
 
 let attribution = """&copy <a href = "http://osm.org/copyright">OpenStreetMap</a> contributors"""
-
-let toBounds (point1, point2) : Leaflet.LatLngBoundsExpression = [ point1; point2 ] |> ResizeArray<Leaflet.LatLngTuple> |> Fable.Core.U2.Case2
 
 let view model dispatch =
     ReactLeaflet.map

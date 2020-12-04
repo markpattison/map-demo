@@ -9,7 +9,7 @@ In this walkthrough I'll show how to quickly and easily visualise data on an int
 
 As you'd expect from a SAFE Stack application, we're going to be using [Fable](https://fable.io/) to render the map and a simple [Saturn](https://saturnframework.org/) server to provide the data.
 
-All source code can be found on [Github](https://github.com/markpattison/map-demo).
+The starting point for this project was v2.2.0 of the SAFE Stack template.  All source code can be found on [Github](https://github.com/markpattison/map-demo).
 
 #### Sample data - COVID-19 case rates in the United Kingdom
 
@@ -390,7 +390,7 @@ It's convenient to be able to specify the initial map view in our model.  We'll 
 
     MapBounds: (float * float) * (float * float)
 
-Here each `float * float` pair holds the latitude and longitude of a point, with the two points holding the minimum and maximum values we'd like to see when first viewing the map.
+Here each `float * float` pair holds the latitude and longitude of a point, with the two points holding the minimum and maximum values we'd like to see when first viewing the map.  We don't bother updating these as the map is scrolled, which means the map will revert to the default view if it's redrawn.
 
 These values will show the southern part of the UK:
 
@@ -416,12 +416,25 @@ Following the [example](https://react-leaflet.js.org/docs/start-setup) we can ad
               []
           ]
 
-Here's our map - not bad for about 10 lines of code!
+Here's our map - not bad for under 10 lines of code!
 """
 
 
 let clientShowData = """
 ## Client: Showing our data
+
+types
+
+state
+
+initial state
+
+process
+
+update
+
+view
+
 """
 
 

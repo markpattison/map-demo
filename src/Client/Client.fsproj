@@ -8,6 +8,7 @@
         <None Include="index.html" />
         <None Include="paket.references" />
         <Compile Include="Types.fs" />
+        <Compile Include="LeafletHelpers.fs" />
         <Compile Include="State.fs" />
         <Compile Include="Markdown.fs" />
         <Compile Include="Navbar.fs" />
