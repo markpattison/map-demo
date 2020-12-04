@@ -12,6 +12,7 @@
         <Compile Include="Markdown.fs" />
         <Compile Include="Navbar.fs" />
         <Compile Include="Blog.fs" />
+        <Compile Include="PlainMap.fs" />
         <Compile Include="Map.fs" />
         <Compile Include="View.fs" />
         <Compile Include="App.fs" />

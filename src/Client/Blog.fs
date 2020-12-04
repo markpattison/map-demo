@@ -295,25 +295,70 @@ Lastly, we can join the various data together to end up with an array of `Area` 
 let clientPlainMap = """
 ## Client: Drawing a map
 
-Leaflet & React Leaflet & Fable React Leaflet
+We're going to use the [Leaflet](https://leafletjs.com/) JavaScript library to actually render a map.
+
+However, to fit into our nice Elmish/React framework we're also going to use [React Leaflet](https://react-leaflet.js.org/) which wraps a Leaflet map in a React component,
+[Fable.ReactLeaflet](https://github.com/MangelMaxime/Fable.ReactLeaflet) to provide Fable bindings for React Leaflet and
+[react-leaflet-control](https://www.npmjs.com/package/react-leaflet-control) which will let use React elements inside the map, e.g. as a legend.
+
+Whilst this is a lot to bring in, it will make adding data to the map simple.
+
+#### Setup
+
+We can add the dependencies using the following:
 
     npm install -s leaflet
-    npm install -s react-leaflet@2.7.0 (v3 has breaking changes)
+    npm install -s react-leaflet@2.7.0
     npm install -s react-leaflet-control
 
-    paket add Fable.ReactLeaflet (implies Fable.Leaflet)
+    paket add Fable.ReactLeaflet
 
-stuff from : https://leafletjs.com/examples/quick-start/
+Note that version 3 of `react-leaflet` has breaking changes which aren't yet reflected in `Fable.ReactLeaflet`, so we're using an earlier version.
 
-Model: MapBounds & default values
-Map.fs
+Adding `Fable.ReactLeaflet` automatically brings a reference to [Fable.Leaflet](https://github.com/MangelMaxime/Fable.Leaflet) which contains all the domain types.
 
+We also need to add the Leaflet CSS and JS files to our `index.html` page as described in Leaflet's [Getting Started](https://leafletjs.com/examples/quick-start/) page.
+
+#### Initial view
+
+It's convenient to be able to specify the initial map view in our model.  We'll do this by adding the initial bounds to our state variable:
+
+    MapBounds: (float * float) * (float * float)
+
+Here each `float * float` pair holds the latitude and longitude of a point, with the two points holding the minimum and maximum values we'd like to see when first viewing the map.
+
+These values will show the southern part of the UK:
+
+    let defaultBounds = (51.0, -5.0), (55.0, 1.5)
+
+#### Drawing the map
+
+The only helper function we need is something to turn our pair of bounds into a `LatLngBoundsExpression` which Fable.Leaflet can use.  This took a bit of experimentation to get right.
+
+    let toBounds (point1, point2) : Leaflet.LatLngBoundsExpression = [ point1; point2 ] |> ResizeArray<Leaflet.LatLngTuple> |> Fable.Core.U2.Case2
+
+At last we're ready to draw the map!  The Fable/React bindings make this clean and declarative.
+
+Following the [example](https://react-leaflet.js.org/docs/start-setup) we can add a tile layer from OpenStreetMap (with attribution, of course) and immediately having a working interactive map on our page.
+
+    let view model dispatch =
+        ReactLeaflet.map
+          [ ReactLeaflet.MapProps.Style [ Height 900; Width 1200]
+            ReactLeaflet.MapProps.Bounds (toBounds model.MapBounds) ]
+          [ yield ReactLeaflet.tileLayer
+              [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
+                ReactLeaflet.TileLayerProps.Attribution attribution ]
+              []
+          ]
+
+Here's our map:
 """
 
 
 let clientShowData = """
 ## Client: Showing our data
 """
+
 
 let results = """
 ## The resulting map

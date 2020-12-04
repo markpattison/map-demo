@@ -33,11 +33,15 @@ let pageContent (model : Model) (dispatch : Msg -> unit) =
   | Introduction -> Markdown.parseAsReactEl "" Blog.introduction
   | Shared -> Markdown.parseAsReactEl "" Blog.shared
   | Server -> Markdown.parseAsReactEl "" Blog.server
-  | ClientPlainMap -> Markdown.parseAsReactEl "" Blog.clientPlainMap
+  | ClientPlainMap ->
+      div []
+        [ Markdown.parseAsReactEl "" Blog.clientPlainMap
+          PlainMap.view model ]
   | ClientShowData -> Markdown.parseAsReactEl "" Blog.clientShowData
-  | Results -> div []
-                [ Markdown.parseAsReactEl "" Blog.results
-                  Map.view model dispatch ]
+  | Results ->
+      div []
+        [ Markdown.parseAsReactEl "" Blog.results
+          Map.view model dispatch ]
 
 let view (model : Model) (dispatch : Msg -> unit) =
   div []
