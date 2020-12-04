@@ -14,6 +14,4 @@ let view model =
         ReactLeaflet.MapProps.Bounds (toBounds model.MapBounds) ]
       [ yield ReactLeaflet.tileLayer
           [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
-            ReactLeaflet.TileLayerProps.Attribution attribution ]
-          []
-      ]
+            ReactLeaflet.TileLayerProps.Attribution attribution ] [] ]

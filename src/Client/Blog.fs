@@ -406,15 +406,13 @@ At last we're ready to draw the map!  The Fable/React bindings make this clean a
 
 Following the [example](https://react-leaflet.js.org/docs/start-setup) we can add a tile layer from OpenStreetMap (with attribution, of course) and immediately having a working interactive map on our page.
 
-    let view model dispatch =
+    let view model =
         ReactLeaflet.map
           [ ReactLeaflet.MapProps.Style [ Height 900; Width 1200]
             ReactLeaflet.MapProps.Bounds (toBounds model.MapBounds) ]
           [ yield ReactLeaflet.tileLayer
               [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
-                ReactLeaflet.TileLayerProps.Attribution attribution ]
-              []
-          ]
+                ReactLeaflet.TileLayerProps.Attribution attribution ] [] ]
 
 Here's our map - not bad for under 10 lines of code!
 """
@@ -434,6 +432,7 @@ process
 update
 
 view
+- index
 
 """
 
