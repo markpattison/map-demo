@@ -14,6 +14,6 @@ Program.mkProgram State.init State.update View.view
 #endif
 |> Program.withReactSynchronous "elmish-app"
 #if DEBUG
-|> Program.withDebugger
+//|> Program.withDebugger
 #endif
 |> Program.run
