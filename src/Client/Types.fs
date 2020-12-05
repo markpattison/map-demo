@@ -25,6 +25,7 @@ type Model =
       PossibleDates: DateTime[] option
       SelectedDate: DateTime option
       Areas: AreaView[] option
+      HoveredArea: AreaView option
       MapBounds: (float * float) * (float * float) }
 
 type Msg =
@@ -32,3 +33,4 @@ type Msg =
     | GotDates of DateTime[]
     | GotData of Area[]
     | SelectDate of DateTime
+    | Hover of AreaView

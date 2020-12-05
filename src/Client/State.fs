@@ -22,6 +22,7 @@ let init(): Model * Cmd<Msg> =
           PossibleDates = None
           SelectedDate = None
           Areas = None
+          HoveredArea = None
           MapBounds = defaultBounds }
     
     model, Cmd.batch [ loadDates; loadData ]
@@ -31,4 +32,5 @@ let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     | ShowPage page -> { model with CurrentPage = page }, Cmd.none
     | GotDates dates -> { model with PossibleDates = Some dates; SelectedDate = Some (dates.[0]) }, Cmd.none
     | GotData areas -> { model with Areas = Some (Array.map LeafletHelpers.processArea areas) }, Cmd.none
-    | SelectDate date -> { model with SelectedDate = Some date }, Cmd.none
+    | SelectDate date -> { model with SelectedDate = Some date; HoveredArea = None }, Cmd.none
+    | Hover area -> { model with HoveredArea = Some area }, Cmd.none

@@ -4,8 +4,10 @@ let red = "#ff0000"
 let yellow = "#ffff00"
 let green = "#00ff00"
 let grey = "#bbbbbb"
+let black = "#000000"
 
 let areaOpacity = 0.7
+let borderWeight = 3.0
 
 let rateMin = 0.0
 let rateMid = 200.0
