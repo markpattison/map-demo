@@ -435,8 +435,8 @@ view
 - legend
 - plot areas / memoize
 - date selector
-- tooltip
-- ??
+- hover
+- info box
 
 """
 
