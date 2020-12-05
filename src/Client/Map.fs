@@ -9,7 +9,7 @@ open Types
 
 let attribution = """&copy <a href = "http://osm.org/copyright">OpenStreetMap</a> contributors"""
 
-let inline customoControl (props: ReactLeaflet.MapControlProps list) (children: ReactElement list) : ReactElement =
+let inline customControl (props: ReactLeaflet.MapControlProps list) (children: ReactElement list) : ReactElement =
     ofImport "default" "react-leaflet-control" (Fable.Core.JsInterop.keyValueList Fable.Core.CaseRules.LowerFirst props) children
 
 let legendEntry colour text =
@@ -27,7 +27,7 @@ let legendEntry colour text =
        str text ]
 
 let legend =
-    customoControl
+    customControl
       [ ReactLeaflet.MapControlProps.Position ReactLeaflet.ControlPosition.Bottomright ]
       [ Box.box' []
           [ str "Weekly cases per 100k"
