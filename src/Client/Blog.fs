@@ -432,7 +432,11 @@ process
 update
 
 view
-- index
+- legend
+- plot areas / memoize
+- date selector
+- tooltip
+- ??
 
 """
 

@@ -28,6 +28,7 @@ let legend =
           [ str "Weekly cases per 100k"
             br []
             br []
-            legendEntry Colours.red "High"
-            legendEntry Colours.green "Low"
+            legendEntry Colours.green (sprintf "%.0f" Colours.rateMin)
+            legendEntry Colours.yellow (sprintf "%.0f" Colours.rateMid)
+            legendEntry Colours.red (sprintf "%.0f" Colours.rateMax)
             legendEntry Colours.grey "No data" ] ]
