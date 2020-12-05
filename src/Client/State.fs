@@ -3,7 +3,6 @@ module State
 open Elmish
 open Fable.Remoting.Client
 
-open LeafletHelpers
 open Shared
 open Types
 
@@ -31,5 +30,5 @@ let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
     match msg with
     | ShowPage page -> { model with CurrentPage = page }, Cmd.none
     | GotDates dates -> { model with PossibleDates = Some dates; SelectedDate = Some (dates.[0]) }, Cmd.none
-    | GotData areas -> { model with Areas = Some (Array.map processArea areas) }, Cmd.none
+    | GotData areas -> { model with Areas = Some (Array.map LeafletHelpers.processArea areas) }, Cmd.none
     | SelectDate date -> { model with SelectedDate = Some date }, Cmd.none
