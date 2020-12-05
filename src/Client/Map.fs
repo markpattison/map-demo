@@ -45,7 +45,7 @@ let createMapAreas areas date dispatch =
     |> Array.map createMemoizedReactMapArea
 
 let view model dispatch =
-    let content =
+    let mapAreas =
         match model.Areas, model.SelectedDate with
         | Some areas, Some date -> createMapAreas areas date dispatch
         | _ -> [| |]
@@ -57,4 +57,4 @@ let view model dispatch =
           [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
             ReactLeaflet.TileLayerProps.Attribution attribution ] []
         yield MapLegend.legend
-        yield! content ]
+        yield! mapAreas ]
