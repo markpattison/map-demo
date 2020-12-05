@@ -1,8 +1,11 @@
 module MapLegend
 
+open System
 open Fable.React
 open Fable.React.Props
 open Fulma
+
+open Types
 
 let inline customControl (props: ReactLeaflet.MapControlProps list) (children: ReactElement list) : ReactElement =
     ofImport "default" "react-leaflet-control" (Fable.Core.JsInterop.keyValueList Fable.Core.CaseRules.LowerFirst props) children
@@ -32,3 +35,19 @@ let legend =
             legendEntry Colours.yellow (sprintf "%.0f" Colours.rateMid)
             legendEntry Colours.red (sprintf "%.0f" Colours.rateMax)
             legendEntry Colours.grey "No data" ] ]
+
+let private casesText (date: DateTime, cases) =
+    [ sprintf "%s: %.0f weekly cases per 100k" (date.ToShortDateString()) cases |> str
+      br [] ]
+
+let areaInfo (area: AreaView) =
+    customControl
+      [ ReactLeaflet.MapControlProps.Position ReactLeaflet.ControlPosition.Topright ]
+      [ Box.box' []
+          [ str area.Name
+            br[]
+            br[]
+            if Map.isEmpty area.Data.WeeklyCasesPer100k then
+                str "No data"
+            else
+                yield! area.Data.WeeklyCasesPer100k |> Map.toSeq |> Seq.collect casesText ] ]

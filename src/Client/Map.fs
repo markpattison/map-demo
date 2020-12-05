@@ -69,6 +69,11 @@ let createDateButtons model dispatch =
 let view model dispatch =
     let dateButtons = createDateButtons model dispatch
     
+    let infoBox =
+        match model.HoveredArea, model.SelectedDate with
+        | Some area, Some date -> [ MapLegend.areaInfo area ]
+        | _ -> []
+
     let mapAreas =
         match model.Areas, model.SelectedDate with
         | Some areas, Some date -> createMapAreas areas date model.HoveredArea dispatch
@@ -82,6 +87,7 @@ let view model dispatch =
               [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
                 ReactLeaflet.TileLayerProps.Attribution attribution ] []
             yield MapLegend.legend
+            yield! infoBox
             yield! mapAreas ]
         br []
         dateButtons ]
