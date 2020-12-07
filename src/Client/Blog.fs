@@ -421,15 +421,84 @@ Here's our map - not bad for under 10 lines of code!
 let clientShowData = """
 ## Client: Showing our data
 
-types
+As well as showing colour-coded covid case rates for geographical areas, our interactive map will have a range of dates from which we can select, and will show extra information when hovering over an area.
 
-state
+#### State Types
 
-initial state
+This functionality is reflected in our state type:
 
-process
+    type Model =
+        { PossibleDates: DateTime[] option
+          SelectedDate: DateTime option
+          Areas: AreaView[] option
+          HoveredArea: AreaView option
+          MapBounds: (float * float) * (float * float) }
 
-update
+`PossibleDates` will list the available dates which a user can select and `Areas` will hold all the geographical data in a new `AreaView` type.  Both of these will be `option` types, because when our page is first loaded we won't have retrieved this information from the server yet.  Once retrieved, these values won't change.
+
+`SelectedDate` will be the currently chosen date.  Again, this is optional as there will be on date selected initially.  Finally, `HoveredArea` will reference the area currently being hovered over, if any.
+
+The `AreaView` type is a pretty close match to the `Area` type in our shared domain model, but with the boundary data pre-transformed into Leaflet types - more on this below.
+
+#### Message types and updates
+
+Our list of possible messages is pretty straightforward:
+
+    type Msg =
+        | GotDates of DateTime[]
+        | GotData of Area[]
+        | SelectDate of DateTime
+        | Hover of AreaView
+
+So is the `update` function:
+
+    let update (msg: Msg) (model: Model): Model * Cmd<Msg> =
+        match msg with
+        | GotDates dates -> { model with PossibleDates = Some dates; SelectedDate = Some (dates.[0]) }, Cmd.none
+        | GotData areas -> { model with Areas = Some (Array.map LeafletHelpers.processArea areas) }, Cmd.none
+        | SelectDate date -> { model with SelectedDate = Some date; HoveredArea = None }, Cmd.none
+        | Hover area -> { model with HoveredArea = Some area }, Cmd.none
+
+The first two messages/updates handle receiving data from the server, and simply update the model with the relevant data.  When the dates are received, we arbitrarily choose the first one to be initially selected.  Note that this would crash if an empty list were returned - a more robust implementaion would handle this case!
+
+The `SelectDate` and `Hover` messages just updates the chosen date and highlighted area.  Note that `SelectDate` also clears the `HoveredArea` field - I found this to be the easiest way to get back to a "clean" map with no area highlighted.
+
+#### Initial state and calling the API for data
+
+Whilst the initial state is not very exciting, I love how expressive the `init()` function becomes by combining the starting value of the model along with the server calls to make immediately.
+
+    let covidMapApi =
+        Remoting.createApi()
+        |> Remoting.withRouteBuilder Route.builder
+        |> Remoting.buildProxy<ICovidMapApi>
+
+    let loadDates = Cmd.OfAsync.perform covidMapApi.getDates () GotDates
+    let loadData = Cmd.OfAsync.perform covidMapApi.getData () GotData
+
+    let init(): Model * Cmd<Msg> =
+        let model =
+            { PossibleDates = None
+              SelectedDate = None
+              Areas = None
+              HoveredArea = None
+              MapBounds = defaultBounds }
+        
+        model, Cmd.batch [ loadDates; loadData ]
+
+When the data is received, each `Area` is transformed into an `AreaView` type.  Doing this once when the data arrives will be more efficient than every time an area is drawn.  We also use an empty `Map` in the case when no data is available.
+
+    let processArea (area: Area) : AreaView =
+        { ONSCode = area.ONSCode
+          Name = area.Name
+          Data =
+            match area.Data with
+            | None -> { WeeklyCasesPer100k = Map.empty }
+            | Some data -> data
+          LeafletBoundary = processBoundary area.Boundary
+        }
+
+The `processBoundary` function just converts our geographic domain types into the corresponding Leaflet types.  This is in the `LeafletHelpers.fs` file if you want to see it.
+
 
 view
 - legend
