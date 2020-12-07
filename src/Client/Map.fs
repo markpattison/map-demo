@@ -52,23 +52,7 @@ let createMapAreas areas date hoveredArea dispatch =
         (unhovered |> Array.map (toProps date dispatch hoveredArea) |> Array.map createMemoizedReactMapArea)
         (hovered |> Array.map (toProps date dispatch hoveredArea) |> Array.map createMemoizedReactMapArea)
 
-let button txt onClick isSelected =
-    Control.div []
-      [ Button.button
-          [ if isSelected then yield Button.Color IsPrimary
-            yield Button.OnClick onClick ]
-          [ str txt ] ]
-
-let createDateButtons model dispatch =
-    match model.PossibleDates, model.SelectedDate with
-    | Some dates, Some selectedDate ->
-        Field.div [ Field.IsGroupedMultiline ]
-          (dates |> List.ofArray |> List.map (fun d -> button (d.ToShortDateString()) (fun _ -> dispatch (SelectDate d)) (selectedDate = d)))
-    | _ -> Field.div [] [ str "Loading data..." ]
-
-let view model dispatch =
-    let dateButtons = createDateButtons model dispatch
-    
+let view model dispatch =    
     let infoBox =
         match model.HoveredArea, model.SelectedDate with
         | Some area, Some date -> [ MapLegend.areaInfo area ]
@@ -78,6 +62,8 @@ let view model dispatch =
         match model.Areas, model.SelectedDate with
         | Some areas, Some date -> createMapAreas areas date model.HoveredArea dispatch
         | _ -> [| |]
+    
+    let dateButtons = DateButtons.create model dispatch
     
     div []
       [ ReactLeaflet.map

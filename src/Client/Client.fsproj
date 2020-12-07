@@ -15,6 +15,7 @@
         <Compile Include="Blog.fs" />
         <Compile Include="PlainMap.fs" />
         <Compile Include="Colours.fs" />
+        <Compile Include="DateButtons.fs" />
         <Compile Include="MapLegend.fs" />
         <Compile Include="Map.fs" />
         <Compile Include="View.fs" />
