@@ -545,20 +545,134 @@ The buttons are shown below the map using a separate call.
 
 #### Map areas
 
-We'll start with the most important part and look at the `createMapAreas` function:
+We'll start with the most important part and look at the `createMapAreas` function.  In theory all this has to do is to create a coloured `ReactLeaflet.polygon` for each `AreaView`.  However, there are a few extra considerations.
 
-view
-- plot areas / memoize
-- buttons
-- legend
-- hover
-- info box
+###### Selecting dates
 
+The areas will change colour when we select a different date.  To do this we'll use a new type, `MapAreaProps` which will be represent an area that can actually be drawn, i.e. having a specific colour.  We can create one from an `AreaView` once we know the selected date and whether the area is hovered:
+
+    let toProps selectedDate dispatch hoveredArea (area: AreaView) =
+        let (ONSCode code) = area.ONSCode
+        { ONSCode = code
+          Name = area.Name
+          SelectedDate = selectedDate
+          WeeklyCasesPer100k = Map.tryFind selectedDate area.Data.WeeklyCasesPer100k
+          LeafletBoundary = area.LeafletBoundary
+          Hovered = (hoveredArea = Some area)
+          OnHover = (fun _ -> dispatch (Hover area))
+        }
+
+It also includes the callback function `OnHover` which will send a message when the hover event is triggered.
+
+###### Highlighting hovered areas
+
+We'll be highlighting an area (by drawing a border around it) when it's hovered over.  It turns out it's best to draw the highlighted area last, so the border doesn't get partially overdrawn by neighbouring areas.  We achieve this by putting the hovered area (if any) last in the list:
+
+    let createMapAreas areas date hoveredArea dispatch =
+        let hovered, unhovered = areas |> Array.partition (fun a -> hoveredArea = Some a)
+
+        Array.append
+            (unhovered |> Array.map (toProps date dispatch hoveredArea) |> Array.map createMemoizedReactMapArea)
+            (hovered |> Array.map (toProps date dispatch hoveredArea) |> Array.map createMemoizedReactMapArea)
+
+###### Memoizing
+
+To keep the map snappy, we don't want to redraw all the areas when anything changes (e.g. a new area is hovered over).
+
+To achieve this we'll create a `FunctionComponent` for each area.  A [function component](https://fable.io/blog/Announcing-Fable-React-5.html) lets us avoid re-rendering something if its properties haven't changed:
+
+    let createReactMapArea (props: MapAreaProps) =
+        ReactLeaflet.polygon
+          [ ReactLeaflet.PolygonProps.Positions props.LeafletBoundary
+            ReactLeaflet.PolygonProps.Weight (if props.Hovered then Colours.borderWeight else 0.0)
+            ReactLeaflet.PolygonProps.Color Colours.black
+            ReactLeaflet.PolygonProps.FillColor (Colours.interpGreenYellowRed props.WeeklyCasesPer100k)
+            ReactLeaflet.PolygonProps.FillOpacity Colours.areaOpacity
+            ReactLeaflet.PolygonProps.OnMouseOver props.OnHover ]
+          []
+     
+    let createMemoizedReactMapArea =
+        FunctionComponent.Of(createReactMapArea, memoizeWith = equalsButFunctions, withKey = (fun p -> p.ONSCode + if p.Hovered then "-hovered" else ""))
+
+The `createReactMapArea` function is a React component because it takes a `props` object and returns a React element.  This is quite simple - the border will only be shown if the area is hovered and the `Colours` module has some helper functions to work out sensible colours for Covid rates.
+
+In the `createMemoizedReactMapArea` function, the `memoizeWith = equalsButFunctions` parameter tells React to check whether anything in the `props` object (other than members which are themselves functions) has changed when determining whether to re-render the element.
+
+The `withKey` parameter tells React which elements correspond to each other when the list of elements changes.  This allows it to avoid re-rendering the entire list of areas when we change its order (e.g. as a resulting of hovering).
+
+We now have all we need to draw our areas efficiently and update them when a new date is selected or a hover event occurs!
+
+#### Map legend and info box
+
+The map legend uses the `react-leaflet-control` package we installed earlier to show React elements on top of the map. <img style="float: right;" src="legend.png">
+
+This lets us create the legend as a React element and include it in the children of the map object.
+
+Firstly a boilerplate helper function which wraps that package.
+
+    let inline customControl (props: ReactLeaflet.MapControlProps list) (children: ReactElement list) : ReactElement =
+        ofImport
+            "default"
+            "react-leaflet-control"
+            (Fable.Core.JsInterop.keyValueList Fable.Core.CaseRules.LowerFirst props)
+            children
+
+Now a rather tedious function to draw a little square box alongside some text:
+
+    let legendEntry colour text =
+        div []
+         [ div
+             [ Style
+                 [ Width "10px"
+                   Height "10px"
+                   BackgroundColor colour
+                   Display DisplayOptions.InlineBlock
+                   MarginRight "5px"
+                   BorderColor Colours.grey
+                   BorderStyle "solid"
+                   BorderWidth "1px" ] ] []
+           str text ]
+
+Finally we can create the legend itself:
+
+    let legend =
+        customControl
+          [ ReactLeaflet.MapControlProps.Position ReactLeaflet.ControlPosition.Bottomright ]
+          [ Box.box' []
+              [ str "Weekly cases per 100k"
+                br []
+                br []
+                legendEntry Colours.colourMin (sprintf "%.0f" Colours.rateMin)
+                legendEntry Colours.colourMid (sprintf "%.0f" Colours.rateMid)
+                legendEntry Colours.colourMax (sprintf "%.0f" Colours.rateMax)
+                legendEntry Colours.grey "No data" ] ]
+
+The info box is created similarly and is shown in the top-right corner when an area has been hovered.
+
+#### Date buttons
+
+Standard Fulma buttons are used below the map for selecting the date to show.
+
+    let button txt onClick isSelected =
+        Control.div []
+          [ Button.button
+              [ if isSelected then yield Button.Color IsPrimary
+                yield Button.OnClick onClick ]
+              [ str txt ] ]
+
+    let create model dispatch =
+        match model.PossibleDates, model.SelectedDate with
+        | Some dates, Some selectedDate ->
+            Field.div [ Field.IsGroupedMultiline ]
+              (dates |> List.ofArray |> List.map (fun d -> button (d.ToShortDateString()) (fun _ -> dispatch (SelectDate d)) (selectedDate = d)))
+        | _ -> Field.div [] [ str "Loading data..." ]
+
+We can see that for a button with a date `d`, the `onClick` event is set to dispatch a message `SelectDate d` and that it's hoghlighted only if `selectedDate = d`.
 """
 
 
 let results = """
 ## The resulting map
 
-Select different dates or hover over an area to see its full history of covid rates.
+Select different dates or hover over an area to see its history of covid rates.
 """

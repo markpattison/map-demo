@@ -34,13 +34,13 @@ let toProps selectedDate dispatch hoveredArea (area: AreaView) =
 
 let createReactMapArea (props: MapAreaProps) =
     ReactLeaflet.polygon
-     [ ReactLeaflet.PolygonProps.Positions props.LeafletBoundary
-       ReactLeaflet.PolygonProps.Weight (if props.Hovered then Colours.borderWeight else 0.0)
-       ReactLeaflet.PolygonProps.Color Colours.black
-       ReactLeaflet.PolygonProps.FillColor (Colours.interpGreenYellowRed props.WeeklyCasesPer100k)
-       ReactLeaflet.PolygonProps.FillOpacity Colours.areaOpacity
-       ReactLeaflet.PolygonProps.OnMouseOver props.OnHover ]
-     []
+      [ ReactLeaflet.PolygonProps.Positions props.LeafletBoundary
+        ReactLeaflet.PolygonProps.Weight (if props.Hovered then Colours.borderWeight else 0.0)
+        ReactLeaflet.PolygonProps.Color Colours.black
+        ReactLeaflet.PolygonProps.FillColor (Colours.interpGreenYellowRed props.WeeklyCasesPer100k)
+        ReactLeaflet.PolygonProps.FillOpacity Colours.areaOpacity
+        ReactLeaflet.PolygonProps.OnMouseOver props.OnHover ]
+      []
 
 let createMemoizedReactMapArea =
     FunctionComponent.Of(createReactMapArea, memoizeWith = equalsButFunctions, withKey = (fun p -> p.ONSCode + if p.Hovered then "-hovered" else ""))

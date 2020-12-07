@@ -8,7 +8,11 @@ open Fulma
 open Types
 
 let inline customControl (props: ReactLeaflet.MapControlProps list) (children: ReactElement list) : ReactElement =
-    ofImport "default" "react-leaflet-control" (Fable.Core.JsInterop.keyValueList Fable.Core.CaseRules.LowerFirst props) children
+    ofImport
+        "default"
+        "react-leaflet-control"
+        (Fable.Core.JsInterop.keyValueList Fable.Core.CaseRules.LowerFirst props)
+        children
 
 let legendEntry colour text =
     div []
