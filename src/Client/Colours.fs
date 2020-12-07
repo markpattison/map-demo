@@ -1,8 +1,5 @@
 module Colours
 
-let red = "#ff0000"
-let yellow = "#ffff00"
-let green = "#00ff00"
 let grey = "#bbbbbb"
 let black = "#000000"
 
@@ -18,14 +15,20 @@ let toHex (x: float) =
     let scaled = int (clamped * 255.0)
     scaled.ToString("X2")
 
+let interpMinMid minRatio =
+    sprintf "#%sdd00" (toHex (1.0 - minRatio))
+
+let interpMaxMid maxRatio =
+    sprintf "#ff%s00" (toHex (1.0 - maxRatio))
+
 let interpGreenYellowRed rateOpt =
     match rateOpt with
     | None -> grey
-    | Some r when r <= rateMin -> green
-    | Some r when r >= rateMax -> red
-    | Some r when r < rateMid ->
-        let greenRatio = (rateMid - r) / (rateMid - rateMin)
-        sprintf "#%sff00" (toHex (1.0 - greenRatio))
-    | Some r ->
-        let redRatio = (r - rateMid) / (rateMax - rateMid)
-        sprintf "#ff%s00" (toHex (1.0 - redRatio))
+    | Some r when r <= rateMin -> interpMinMid 1.0
+    | Some r when r >= rateMax -> interpMaxMid 1.0
+    | Some r when r < rateMid -> interpMinMid ((rateMid - r) / (rateMid - rateMin))
+    | Some r -> interpMaxMid ((r - rateMid) / (rateMax - rateMid))
+
+let colourMin = interpGreenYellowRed (Some rateMin)
+let colourMid = interpGreenYellowRed (Some rateMid)
+let colourMax = interpGreenYellowRed (Some rateMax)

@@ -31,9 +31,9 @@ let legend =
           [ str "Weekly cases per 100k"
             br []
             br []
-            legendEntry Colours.green (sprintf "%.0f" Colours.rateMin)
-            legendEntry Colours.yellow (sprintf "%.0f" Colours.rateMid)
-            legendEntry Colours.red (sprintf "%.0f" Colours.rateMax)
+            legendEntry Colours.colourMin (sprintf "%.0f" Colours.rateMin)
+            legendEntry Colours.colourMid (sprintf "%.0f" Colours.rateMid)
+            legendEntry Colours.colourMax (sprintf "%.0f" Colours.rateMax)
             legendEntry Colours.grey "No data" ] ]
 
 let private casesText (date: DateTime, cases) =
