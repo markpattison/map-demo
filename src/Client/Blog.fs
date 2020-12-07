@@ -418,8 +418,8 @@ Here's our map - not bad for under 10 lines of code!
 """
 
 
-let clientShowData = """
-## Client: Showing our data
+let clientData = """
+## Client: Data and state
 
 As well as showing colour-coded covid case rates for geographical areas, our interactive map will have a range of dates from which we can select, and will show extra information when hovering over an area.
 
@@ -498,12 +498,59 @@ When the data is received, each `Area` is transformed into an `AreaView` type.  
         }
 
 The `processBoundary` function just converts our geographic domain types into the corresponding Leaflet types.  This is in the `LeafletHelpers.fs` file if you want to see it.
+"""
 
+
+let clientRender = """
+
+Our main `view` method will call the following:
+
+    Map.view model dispatch
+
+So all this function has to do is to draw the map as before and render the areas in appropriate colours.  Oh, and the buttons, map legend and an information box when we hover.  Plus wiring up the events and messages, and making sure it's not too slow.  Should be simple, right?
+
+We'll start at the top with the `Map.view` method itself:
+
+    let view model dispatch =    
+        let infoBox =
+            match model.HoveredArea, model.SelectedDate with
+            | Some area, Some date -> [ MapLegend.areaInfo area ]
+            | _ -> []
+
+        let mapAreas =
+            match model.Areas, model.SelectedDate with
+            | Some areas, Some date -> createMapAreas areas date model.HoveredArea dispatch
+            | _ -> [| |]
+        
+        let dateButtons = DateButtons.create model dispatch
+        
+        div []
+          [ ReactLeaflet.map
+              [ ReactLeaflet.MapProps.Style [ Height 900; Width 1200]
+                ReactLeaflet.MapProps.Bounds (toBounds model.MapBounds) ]
+              [ yield ReactLeaflet.tileLayer
+                  [ ReactLeaflet.TileLayerProps.Url "https://{s}.tile.osm.org/{z}/{x}/{y}.png"
+                    ReactLeaflet.TileLayerProps.Attribution attribution ] []
+                yield MapLegend.legend
+                yield! infoBox
+                yield! mapAreas ]
+            br []
+            dateButtons ]
+
+The declarative nature of the Fable/React ecosystem really makes this easy to follow.  The only additions to our view (compared with the plain map) are the extra children of the map element: the legend, info box and map areas.
+
+Note how the legend is always shown (`yield legend`) whereas the info box is shown only when an area has been hovered over (`yield! infoBox` with either an empty or single-element list).  Similarly the `mapAreas` will be empty if the data hasn't yet loaded, or a long list otherwise.
+
+The buttons are shown below the map using a separate call.
+
+#### Map areas
+
+We'll start with the most important part and look at the `createMapAreas` function:
 
 view
-- legend
 - plot areas / memoize
-- date selector
+- buttons
+- legend
 - hover
 - info box
 
@@ -512,4 +559,6 @@ view
 
 let results = """
 ## The resulting map
+
+Select different dates or hover over an area to see its full history of covid rates.
 """

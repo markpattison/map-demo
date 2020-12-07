@@ -9,7 +9,8 @@ type Page =
     | Shared
     | Server
     | ClientPlainMap
-    | ClientShowData
+    | ClientData
+    | ClientRender
     | Results
 
 type LeafletBoundary = Fable.Core.U3<Leaflet.LatLngExpression [], Leaflet.LatLngExpression [] [], Leaflet.LatLngExpression [] [] []>

@@ -22,10 +22,11 @@ let menu currentPage dispatch =
         [ str "Tutorial" ]
       Menu.list []
         [ menuItem "Introduction" Introduction
-          menuItem "Shared" Shared
+          menuItem "Shared data types" Shared
           menuItem "Server" Server
           menuItem "Client - plain map" ClientPlainMap
-          menuItem "Client - show data" ClientShowData
+          menuItem "Client - data and state" ClientData
+          menuItem "Client - render data" ClientRender
           menuItem "Results" Results ] ]
 
 let pageContent (model : Model) (dispatch : Msg -> unit) =
@@ -37,7 +38,8 @@ let pageContent (model : Model) (dispatch : Msg -> unit) =
       div []
         [ Markdown.parseAsReactEl "" Blog.clientPlainMap
           PlainMap.view model ]
-  | ClientShowData -> Markdown.parseAsReactEl "" Blog.clientShowData
+  | ClientData -> Markdown.parseAsReactEl "" Blog.clientData
+  | ClientRender -> Markdown.parseAsReactEl "" Blog.clientRender
   | Results ->
       div []
         [ Markdown.parseAsReactEl "" Blog.results
