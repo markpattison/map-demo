@@ -1,6 +1,7 @@
 module Server
 
 open System
+open System.IO
 
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
@@ -32,12 +33,19 @@ let webApp =
     |> Remoting.fromValue covidMapApi
     |> Remoting.buildHttpHandler
 
+let publicPath = Path.GetFullPath "./public"
+
+let tryGetEnv = System.Environment.GetEnvironmentVariable >> function null | "" -> None | x -> Some x
+let port =
+    "SERVER_PORT"
+    |> tryGetEnv |> Option.map uint16 |> Option.defaultValue 8085us
+
 let app =
     application {
-        url "http://0.0.0.0:8085"
+        url ("http://localhost:" + port.ToString() + "/")
         use_router webApp
         memory_cache
-        use_static "public"
+        use_static publicPath
         use_gzip
     }
 

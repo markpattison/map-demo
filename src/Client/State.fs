@@ -1,14 +1,41 @@
 module State
 
+open System
 open Elmish
+open Fable.Core
 open Fable.Remoting.Client
 
 open Shared
 open Types
 
+// for details of how to deal with virtual path, see:
+// https://github.com/Zaid-Ajaj/SAFE.Simplified/blob/master/client/src/Server.fs
+
+let virtualPath : string =
+    #if MOCHA_TESTS
+    "/"
+    #else
+    JS.eval("window.location.pathname")
+    #endif
+
+let combine (paths: string list) =
+    paths
+    |> List.map (fun path -> List.ofArray (path.Split('/')))
+    |> List.concat
+    |> List.filter (fun segment -> not (segment.Contains(".")))
+    |> List.filter (String.IsNullOrWhiteSpace >> not)
+    |> String.concat "/"
+    |> sprintf "/%s"
+
+let normalize (path: string) = combine [ virtualPath; path ]
+
+let normalizeRoutes typeName methodName =
+    Route.builder typeName methodName
+    |> normalize
+
 let covidMapApi =
     Remoting.createApi()
-    |> Remoting.withRouteBuilder Route.builder
+    |> Remoting.withRouteBuilder normalizeRoutes
     |> Remoting.buildProxy<ICovidMapApi>
 
 let defaultBounds = (51.0, -5.0), (55.0, 1.5)
