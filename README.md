@@ -3,7 +3,7 @@ This project is part of the [F# Advent Calendar in English 2020](https://sergeyt
 
 In this walkthrough I'll show how to quickly and easily visualise data on an interactive map using [F#](https://fsharp.org/), [Leaflet](https://leafletjs.com/) and the [SAFE Stack](https://safe-stack.github.io/).
 
-See it in action at [http://www.markpattison.net/mapdemo/].
+See it in action at http://www.markpattison.net/mapdemo/
 
 ## Install pre-requisites
 You'll need to install the following pre-requisites in order to build SAFE applications
