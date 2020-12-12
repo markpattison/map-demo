@@ -24,6 +24,6 @@ let view =
   Navbar.navbar [ Navbar.Color IsPrimary ]
     [ Navbar.Brand.div []
         [ Navbar.Item.div []
-            [ Heading.h4 [] [ str "Map Data Visualisation" ] ] ]
+            [ Heading.h4 [] [ str "Map Data Visualisation with F# and Fable" ] ] ]
       Navbar.End.div []
         [ navButtons ] ]
