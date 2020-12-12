@@ -19,7 +19,7 @@ type MapAreaProps =
       OnHover: Leaflet.LeafletMouseEvent -> unit
     }
 
-let attribution = """&copy <a href = "http://osm.org/copyright">OpenStreetMap</a> contributors"""
+let attribution = """&copy <a href = "http://osm.org/copyright">OpenStreetMap</a> contributors, Office for National Statistics"""
 
 let toProps selectedDate dispatch hoveredArea (area: AreaView) =
     let (ONSCode code) = area.ONSCode
