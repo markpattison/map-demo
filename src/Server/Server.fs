@@ -15,7 +15,7 @@ let getAllData() =
 
     let firstDate = (List.min dates).AddDays(-8.0)
     let lastDate = List.max dates
-    let covidData = CovidData.read "./data/ltla_2020-11-22.csv" firstDate lastDate
+    let covidData = CovidData.read "./data/ltla_2020-12-11.csv" firstDate lastDate
 
     let populations = Populations.read "./data/population_estimates.csv"
     let boundaries = Geography.readBoundaries "./data/Local_Authority_Districts__December_2019__Boundaries_UK_BUC.kml"

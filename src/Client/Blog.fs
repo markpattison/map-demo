@@ -304,13 +304,13 @@ Lastly, we can join the various data together to end up with an array of `Area` 
 
 Bringing this all together in our server implementation using some example dates, we can implement the API by reading the relevant data for Covid rates (just keeping relevant dates), populations and geographical boundaries and calling the join function above:
 
-    let dates = [ DateTime(2020, 11, 19); DateTime(2020, 11, 20); DateTime(2020, 11, 21) ]
+    let dates = [ DateTime(2020, 11, 1); DateTime(2020, 11, 8); DateTime(2020, 11, 15); DateTime(2020, 11, 22); DateTime(2020, 11, 29); DateTime(2020, 12, 6) ]
 
     let getAllData() =
 
         let firstDate = (List.min dates).AddDays(-8.0)
         let lastDate = List.max dates
-        let covidData = CovidData.read "./data/ltla_2020-11-22.csv" firstDate lastDate
+        let covidData = CovidData.read "./data/ltla_2020-12-11.csv" firstDate lastDate
 
         let populations = Populations.read "./data/population_estimates.csv"
         let boundaries = Geography.readBoundaries "./data/Local_Authority_Districts__December_2019__Boundaries_UK_BUC.kml"
