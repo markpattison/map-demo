@@ -18,7 +18,7 @@ let extractPoints (ring: LinearRing) =
 
 let extractShape (poly: Polygon) =
     {
-        OuterBoundary = poly.OuterBoundary.LinearRing |> extractPoints
+        OuterBoundary = extractPoints poly.OuterBoundary.LinearRing
         Holes =
             poly.InnerBoundary
             |> Seq.map (fun innerBoundary -> extractPoints innerBoundary.LinearRing)

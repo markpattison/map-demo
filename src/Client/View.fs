@@ -19,7 +19,7 @@ let menu currentPage dispatch =
   let menuItem = menuLink currentPage dispatch
   Menu.menu []
     [ Menu.label []
-        [ str "Tutorial" ]
+        [ str "Walkthrough" ]
       Menu.list []
         [ menuItem "Introduction" Introduction
           menuItem "Shared data types" Shared

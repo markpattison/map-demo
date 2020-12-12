@@ -18,9 +18,7 @@ let private extractRates dates areaData population =
         dates
         |> List.map (fun date -> date, (totalCasesInWeekTo areaData date) * 100000.0 / population)
 
-    {
-        WeeklyCasesPer100k = Map.ofList weeklyRates
-    }
+    { WeeklyCasesPer100k = Map.ofList weeklyRates }
 
 let join dates (covidData: CovidData []) populations boundaries =
 

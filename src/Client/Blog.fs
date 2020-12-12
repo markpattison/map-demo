@@ -3,23 +3,25 @@ module Blog
 let introduction = """
 ## Introduction
 
-This site is part of the [F# Advent Calendar in English 2020](https://sergeytihon.com/2020/10/22/f-advent-calendar-in-english-2020/).
+This site is part of the [F# Advent Calendar in English 2020](https://sergeytihon.com/2020/10/22/f-advent-calendar-in-english-2020/).<img style="float: right;" src="map.png">
 
 In this walkthrough I'll show how to quickly and easily visualise data on an interactive map using [F#](https://fsharp.org/), [Leaflet](https://leafletjs.com/) and the [SAFE Stack](https://safe-stack.github.io/).
 
 As you'd expect from a SAFE Stack application, we're going to be using [Fable](https://fable.io/) to render the map and a simple [Saturn](https://saturnframework.org/) server to provide the data.
 
-The starting point for this project was v2.2.0 of the SAFE Stack template.  All source code can be found on [Github](https://github.com/markpattison/map-demo).
+The starting point for this project was v2.2.0 of the SAFE Stack template, with the testing projects and Azure deployment parts removed.
+
+All source code can be found on [Github](https://github.com/markpattison/map-demo).
 
 #### Sample data - COVID-19 case rates in the United Kingdom
 
 Although we've probably all seen enough maps and charts of the pandemic, it's at least an up-to-date (and possibly even useful) example of geographically-based data.
 
-COVID-19 data for the UK can be explored and downloaded from [this page](https://coronavirus.data.gov.uk/details/download) - I've used a CSV file containing daily data for new cases split by local authority (council) areas, of which there are around 380 in the UK.  [This link](https://api.coronavirus.data.gov.uk/v2/data?areaType=ltla&metric=newCasesByPublishDate&metric=newCasesBySpecimenDate&format=csv) will always get the latest version of the file.
+COVID-19 data for the UK can be explored and downloaded from [this page](https://coronavirus.data.gov.uk/details/download) - I've used a CSV file containing daily data for new cases split by local authority areas (i.e. local government subdivisions), of which there are around 380 in the UK.  [This link](https://api.coronavirus.data.gov.uk/v2/data?areaType=ltla&metric=newCasesByPublishDate&metric=newCasesBySpecimenDate&format=csv) will always get the latest version of the file.
 
 The data for the local authority boundaries was downloaded from [here](https://geoportal.statistics.gov.uk/datasets/local-authority-districts-december-2019-boundaries-uk-buc) in [KML](https://developers.google.com/kml/documentation/kml_tut) format.  I've used the ultra-generalised version as this is a much smaller file, but is easily good enough for visualising at a national level.
 
-Finally, I've used population estimates from the [ONS](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/populationestimatesforukenglandandwalesscotlandandnorthernireland) to convert absolute case numbers into rates per 100,000 population, which is a familiar metric.
+Finally, I've used population estimates from the [ONS](https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/populationestimates/datasets/populationestimatesforukenglandandwalesscotlandandnorthernireland) to convert absolute case numbers into rates per 100,000 population, which is a commonly quoted metric.
 """
 
 
@@ -30,11 +32,13 @@ Here we'll look at the shape of the data that the server will be providing to th
 
 Fundamentally our data will be a list of local authority areas, with an attaching ONS code (a standard way of referencing administrative areas in the UK), local authority name, boundary data (to draw the area on a map) and covid data.
 
+We'd also like to return a list of dates which the user can select from.
+
 This code all lives in the `Shared.fs` file which is referenced by the both the server and client projects.  This guarantees that our data types match.
 
 #### Boundary data
 
-In general, a geographic region can be made up of several disconnected areas.  Each of these could in turn have holes within them.  This can be mapped nicely to F# in the following way.
+In general, a geographic region can be made up of several disconnected areas.  Each of these could in turn have holes within them.  This can be mapped nicely to an F# domain model as follows.
 
 A `Loop` is a simple boundary made up of an array of latitude/longitude pairs: <img style="float: right;" src="shape1.png">
 
@@ -71,7 +75,7 @@ We'll use a simple data structure to hold some weekly data:
 
 A single-case discriminated union will help keep our data type-safe:
 
-    type ONSCOde = | ONSCode of string
+    type ONSCode = | ONSCode of string
 
 Finally we just need another record type to hold all the relevant data for a single area.  We'll use an option type for the rates in case we have missing data for some areas:
 
@@ -102,13 +106,13 @@ let server = """
 
 #### Data
 
-We have three data files (geographic boundaries, Covid rates, population estimates) in the `src\Server\data` folder.  In a production app we would probably reload the Covid data every few hours and cache it in between, but for this walkthrough we'll use static data.
+We have three data files (geographic boundaries, Covid rates, population estimates) in the `src\Server\data` folder.  In a production app we would probably reload the Covid data from the government portal's API every few hours and cache it in between, but for this walkthrough we'll use static data.
 
 #### Reading the boundaries
 
 This section mosly involves just converting from one domain model to another.
 
-The geographic data is stored in a KML file.  This is a type of XML, so we can easily open and inspect it, which helped with understanding the hierarchy of elements.
+The geographic data is stored in a KML file.  This is a type of XML, so we can easily open and inspect it, which helps with understanding the hierarchy of elements.
 
 To read the file more conveniently we're using [SharpKML](https://github.com/samcragg/sharpkml) which provides a nice .NET wrapper around the [KML format](https://developers.google.com/kml/documentation/kml_tut).
 
@@ -132,7 +136,7 @@ The `asPlacemark` function just keeps everything from the file which is a `Place
         | :? Placemark as p -> Some p
         | _ -> None
 
-Now the first `Placemark` entry in our file looks like this.  We want to extract the area code and name as well as the boundary details (cut short here for brevity).
+The first `Placemark` entry in our file looks like this.  We want to extract the area code and name as well as the boundary details (cut short here for brevity).
 
       <Placemark>
     	<Style><LineStyle><color>ff0000ff</color></LineStyle><PolyStyle><fill>0</fill></PolyStyle></Style>
@@ -181,7 +185,7 @@ Now we just need to turn the KML `Polygon` object into our own `Shape` (with an 
 
     let extractShape (poly: Polygon) =
         {
-            OuterBoundary = poly.OuterBoundary.LinearRing |> extractPoints
+            OuterBoundary = extractPoints poly.OuterBoundary.LinearRing
             Holes =
                 poly.InnerBoundary
                 |> Seq.map (fun innerBoundary -> extractPoints innerBoundary.LinearRing)
@@ -198,7 +202,16 @@ Finally we just need to convert the list of points into our `Loop` type:
                 |> Seq.toArray
         }
 
+Fun fact: the only local authority to actually have a hole in is South Cambridgeshire.  No prizes for guessing that the hole is Cambridge!
+
 #### Reading Covid rates and populations
+
+The start of our Covid rates CSV file looks like this:
+
+    date,areaType,areaCode,areaName,newCasesByPublishDate,newCasesBySpecimenDate
+    "2020-11-22",ltla,E06000001,Hartlepool,31,
+    "2020-11-21",ltla,E06000001,Hartlepool,59,0
+    ...
 
 We're using the CSV Parser from the [FSharp.Data](https://fsharp.github.io/FSharp.Data/) package to read the CSV file.
 
@@ -211,7 +224,7 @@ First we'll create a type to represent the data from one row of the file (i.e. a
             NewCasesBySpecimenDate: float
         }
 
-Next up is a function to read that data from an actual CSV row.  I found that some rows had blanks which I've replaced here with zero values.
+Next up is a function to read that data from an actual CSV row.  I found that some rows (including the first one) had blanks which I've replaced with zero values.
 
 Yes, the number of cases per day is really an integer, but I decided to store everything as floats to keep things simple.
 
@@ -242,7 +255,7 @@ As there are something like 120k rows in the original data, there's a filter so 
         |> Seq.map readRow
         |> Seq.toArray
 
-Reading the population data is very similar so I haven't copied it here.
+Reading the population data is very similar so we won't go through it here.
 
 #### Combining the data
 
@@ -261,9 +274,7 @@ A couple of straightforward functions are used to extract the weekly total of ne
             dates
             |> List.map (fun date -> date, (totalCasesInWeekTo areaData date) * 100000.0 / population)
 
-        {
-            WeeklyCasesPer100k = Map.ofList weeklyRates
-        }
+        { WeeklyCasesPer100k = Map.ofList weeklyRates }
 
 Lastly, we can join the various data together to end up with an array of `Area` records which will be returned by our API:
 
@@ -291,7 +302,7 @@ Lastly, we can join the various data together to end up with an array of `Area` 
 
 #### Implementing and testing the API
 
-Bringing this all together in our server implementation using some example dates, we just need to implement the API by reading the relevant data for Covid rates (just keeping relevant dates), populations and geographical boundaries and calling the join function above:
+Bringing this all together in our server implementation using some example dates, we can implement the API by reading the relevant data for Covid rates (just keeping relevant dates), populations and geographical boundaries and calling the join function above:
 
     let dates = [ DateTime(2020, 11, 19); DateTime(2020, 11, 20); DateTime(2020, 11, 21) ]
 
@@ -354,6 +365,7 @@ And calling `http://localhost:8085/api/ICovidMapApi/getData` returns 1MB of data
             }
         },
         ...
+Looks like our API is working!
 """
 
 
@@ -398,7 +410,7 @@ These values will show the southern part of the UK:
 
 #### Drawing the map
 
-The only helper function we need is something to turn our pair of bounds into a `LatLngBoundsExpression` which Fable.Leaflet can use.  This took a bit of experimentation to get right.
+The only helper function we need is something to turn our pair of bounds into a `LatLngBoundsExpression` which Fable.Leaflet can use.  This took a bit of experimentation to get right:
 
     let toBounds (point1, point2) : Leaflet.LatLngBoundsExpression = [ point1; point2 ] |> ResizeArray<Leaflet.LatLngTuple> |> Fable.Core.U2.Case2
 
@@ -421,7 +433,7 @@ Here's our map - not bad for under 10 lines of code!
 let clientData = """
 ## Client: Data and state
 
-As well as showing colour-coded covid case rates for geographical areas, our interactive map will have a range of dates from which we can select, and will show extra information when hovering over an area.
+As well as showing colour-coded covid case rates for geographical areas, our interactive map will have a range of dates from which we can select, and will show extra information when we hover over an area.
 
 #### State Types
 
@@ -436,7 +448,7 @@ This functionality is reflected in our state type:
 
 `PossibleDates` will list the available dates which a user can select and `Areas` will hold all the geographical data in a new `AreaView` type.  Both of these will be `option` types, because when our page is first loaded we won't have retrieved this information from the server yet.  Once retrieved, these values won't change.
 
-`SelectedDate` will be the currently chosen date.  Again, this is optional as there will be on date selected initially.  Finally, `HoveredArea` will reference the area currently being hovered over, if any.
+`SelectedDate` will be the currently chosen date.  Again, this is optional as there will be no date selected initially.  Finally, `HoveredArea` will reference the area currently being hovered over, if any.
 
 The `AreaView` type is a pretty close match to the `Area` type in our shared domain model, but with the boundary data pre-transformed into Leaflet types - more on this below.
 
@@ -459,13 +471,15 @@ So is the `update` function:
         | SelectDate date -> { model with SelectedDate = Some date; HoveredArea = None }, Cmd.none
         | Hover area -> { model with HoveredArea = Some area }, Cmd.none
 
-The first two messages/updates handle receiving data from the server, and simply update the model with the relevant data.  When the dates are received, we arbitrarily choose the first one to be initially selected.  Note that this would crash if an empty list were returned - a more robust implementaion would handle this case!
+The first two messages/updates handle receiving data from the server, and simply update the model with the relevant data.  See below for how the areas are processed.
+
+When the dates are received, we arbitrarily choose the first one to be initially selected.  Note that this would crash if an empty list were returned - a more robust implementaion would handle this case!
 
 The `SelectDate` and `Hover` messages just updates the chosen date and highlighted area.  Note that `SelectDate` also clears the `HoveredArea` field - I found this to be the easiest way to get back to a "clean" map with no area highlighted.
 
 #### Initial state and calling the API for data
 
-Whilst the initial state is not very exciting, I love how expressive the `init()` function becomes by combining the starting value of the model along with the server calls to make immediately.
+Whilst the initial state is not very exciting, I love how expressive the `init()` function becomes by combining this with the API calls to make immediately on page load.
 
     let covidMapApi =
         Remoting.createApi()
@@ -485,7 +499,7 @@ Whilst the initial state is not very exciting, I love how expressive the `init()
         
         model, Cmd.batch [ loadDates; loadData ]
 
-When the data is received, each `Area` is transformed into an `AreaView` type.  Doing this once when the data arrives will be more efficient than every time an area is drawn.  We also use an empty `Map` in the case when no data is available.
+When the data is received, each `Area` is transformed into an `AreaView` type.  Doing this once when the data arrives is more efficient than every time an area is drawn.  We can also use an empty `Map` in the case when no data is available.
 
     let processArea (area: Area) : AreaView =
         { ONSCode = area.ONSCode
@@ -502,12 +516,13 @@ The `processBoundary` function just converts our geographic domain types into th
 
 
 let clientRender = """
+## Client: Render the data
 
 Our main `view` method will call the following:
 
     Map.view model dispatch
 
-So all this function has to do is to draw the map as before and render the areas in appropriate colours.  Oh, and the buttons, map legend and an information box when we hover.  Plus wiring up the events and messages, and making sure it's not too slow.  Should be simple, right?
+So all this function has to do is to draw the map as before and render the areas in appropriate colours.  Oh, and the buttons, map legend and an information box when we hover.  Plus wiring up the events and messages and making sure it's not too slow.  Should be simple, right?
 
 We'll start at the top with the `Map.view` method itself:
 
@@ -537,9 +552,9 @@ We'll start at the top with the `Map.view` method itself:
             br []
             dateButtons ]
 
-The declarative nature of the Fable/React ecosystem really makes this easy to follow.  The only additions to our view (compared with the plain map) are the extra children of the map element: the legend, info box and map areas.
+The declarative nature of the Fable/React ecosystem makes this easy to follow.  The only additions to our view (compared with the plain map) are the extra children of the map element: the legend, info box and map areas.
 
-Note how the legend is always shown (`yield legend`) whereas the info box is shown only when an area has been hovered over (`yield! infoBox` with either an empty or single-element list).  Similarly the `mapAreas` will be empty if the data hasn't yet loaded, or a long list otherwise.
+Note how the legend is always shown (`yield legend`) whereas the info box is shown only when an area has been hovered over (`yield! infoBox` with either an empty or single-element list).  Similarly the `mapAreas` will be empty if the data hasn't yet loaded, or an array otherwise.
 
 The buttons are shown below the map using a separate call.
 
@@ -549,7 +564,7 @@ We'll start with the most important part and look at the `createMapAreas` functi
 
 ###### Selecting dates
 
-The areas will change colour when we select a different date.  To do this we'll use a new type, `MapAreaProps` which will be represent an area that can actually be drawn, i.e. having a specific colour.  We can create one from an `AreaView` once we know the selected date and whether the area is hovered:
+The areas will change colour when we select a different date.  To do this we'll use a new type, `MapAreaProps` which will be represent an area/date combination, i.e. having a specific colour.  We can create one from an `AreaView` once we know the selected date and whether the area is hovered:
 
     let toProps selectedDate dispatch hoveredArea (area: AreaView) =
         let (ONSCode code) = area.ONSCode
@@ -579,7 +594,7 @@ We'll be highlighting an area (by drawing a border around it) when it's hovered 
 
 To keep the map snappy, we don't want to redraw all the areas when anything changes (e.g. a new area is hovered over).
 
-To achieve this we'll create a `FunctionComponent` for each area.  A [function component](https://fable.io/blog/Announcing-Fable-React-5.html) lets us avoid re-rendering something if its properties haven't changed:
+To achieve this we'll create a `FunctionComponent` for each area.  A [function component](https://fable.io/blog/Announcing-Fable-React-5.html) lets us avoid re-rendering something if its properties haven't changed.
 
     let createReactMapArea (props: MapAreaProps) =
         ReactLeaflet.polygon
@@ -594,19 +609,19 @@ To achieve this we'll create a `FunctionComponent` for each area.  A [function c
     let createMemoizedReactMapArea =
         FunctionComponent.Of(createReactMapArea, memoizeWith = equalsButFunctions, withKey = (fun p -> p.ONSCode + if p.Hovered then "-hovered" else ""))
 
-The `createReactMapArea` function is a React component because it takes a `props` object and returns a React element.  This is quite simple - the border will only be shown if the area is hovered and the `Colours` module has some helper functions to work out sensible colours for Covid rates.
+The `createReactMapArea` function is a React component because it takes a `props` object and returns a React element.  This is quite simple - the border will only be shown if the area is hovered and we use some helper functions from the `Colours` module to provide colours based on the Covid rate.
 
 In the `createMemoizedReactMapArea` function, the `memoizeWith = equalsButFunctions` parameter tells React to check whether anything in the `props` object (other than members which are themselves functions) has changed when determining whether to re-render the element.
 
-The `withKey` parameter tells React which elements correspond to each other when the list of elements changes.  This allows it to avoid re-rendering the entire list of areas when we change its order (e.g. as a resulting of hovering).
+The `withKey` parameter tells React which elements correspond to each other when the [list](https://reactjs.org/docs/lists-and-keys.html) of elements changes.  This allows it to avoid re-rendering the entire list of areas when we change its order (e.g. as a resulting of hovering).
 
 We now have all we need to draw our areas efficiently and update them when a new date is selected or a hover event occurs!
 
 #### Map legend and info box
 
-The map legend uses the `react-leaflet-control` package we installed earlier to show React elements on top of the map. <img style="float: right;" src="legend.png">
+The map legend uses the `react-leaflet-control` package we installed earlier to show React elements on top of the map.
 
-This lets us create the legend as a React element and include it in the children of the map object.
+This lets us create the legend as a React element and include it as a child of the map object.
 
 Firstly a boilerplate helper function which wraps that package.
 
@@ -633,7 +648,7 @@ Now a rather tedious function to draw a little square box alongside some text:
                    BorderWidth "1px" ] ] []
            str text ]
 
-Finally we can create the legend itself:
+Finally we can create the legend itself: <img style="float: right;" src="legend.png">
 
     let legend =
         customControl
@@ -667,7 +682,7 @@ Standard Fulma buttons are used below the map for selecting the date to show.
               (dates |> List.ofArray |> List.map (fun d -> button (d.ToShortDateString()) (fun _ -> dispatch (SelectDate d)) (selectedDate = d)))
         | _ -> Field.div [] [ str "Loading data..." ]
 
-We can see that for a button with a date `d`, the `onClick` event is set to dispatch a message `SelectDate d` and that it's hoghlighted only if `selectedDate = d`.
+We can see that a button with a date `d` is highlighted only if `selectedDate = d`, and the `onClick` event is set to dispatch a message `SelectDate d`.
 """
 
 
