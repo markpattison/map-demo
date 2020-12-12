@@ -11,7 +11,7 @@ As you'd expect from a SAFE Stack application, we're going to be using [Fable](h
 
 The starting point for this project was v2.2.0 of the SAFE Stack template, with the testing projects and Azure deployment parts removed.
 
-All source code can be found on [Github](https://github.com/markpattison/map-demo).
+All source code can be found on Github in the [fsadvent](https://github.com/markpattison/map-demo/tree/fsadvent) branch, which will remain in sync with this walkthrough.
 
 #### Sample data - COVID-19 case rates in the United Kingdom
 
