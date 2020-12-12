@@ -9,7 +9,7 @@ open Saturn
 
 open Shared
 
-let dates = [ DateTime(2020, 11, 4); DateTime(2020, 11, 10); DateTime(2020, 11, 17) ]
+let dates = [ DateTime(2020, 11, 1); DateTime(2020, 11, 8); DateTime(2020, 11, 15); DateTime(2020, 11, 22); DateTime(2020, 11, 29); DateTime(2020, 12, 6) ]
 
 let getAllData() =
 

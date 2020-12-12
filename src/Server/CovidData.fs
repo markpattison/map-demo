@@ -1,6 +1,7 @@
 module CovidData
 
 open System
+open System.Globalization
 
 open FSharp.Data
 open FSharp.Data.CsvExtensions
@@ -19,7 +20,7 @@ let private readRow (row: CsvRow) =
 
     {
         ONSCode = ONSCode row?areaCode
-        Date = row?date.AsDateTime()
+        Date = row?date.AsDateTime(cultureInfo = CultureInfo("en-GB"))
         NewCasesBySpecimenDate = 
             if String.IsNullOrWhiteSpace(newCasesBySpecimenDate) then 0.0 else newCasesBySpecimenDate.AsFloat()
     }
@@ -27,7 +28,7 @@ let private readRow (row: CsvRow) =
 let read (filepath: string) startDate endDate =
 
     let dateFilter (row: CsvRow) =
-        let date = row?date.AsDateTime()
+        let date = row?date.AsDateTime(cultureInfo = CultureInfo("en-GB"))
         date >= startDate && date <= endDate
 
     let csv = CsvFile.Load(filepath)

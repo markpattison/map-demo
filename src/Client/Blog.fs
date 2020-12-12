@@ -209,8 +209,8 @@ Fun fact: the only local authority to actually have a hole in is South Cambridge
 The start of our Covid rates CSV file looks like this:
 
     date,areaType,areaCode,areaName,newCasesByPublishDate,newCasesBySpecimenDate
-    "2020-11-22",ltla,E06000001,Hartlepool,31,
-    "2020-11-21",ltla,E06000001,Hartlepool,59,0
+    11/12/2020,ltla,E06000001,Hartlepool,35,
+    10/12/2020,ltla,E06000001,Hartlepool,54,0
     ...
 
 We're using the CSV Parser from the [FSharp.Data](https://fsharp.github.io/FSharp.Data/) package to read the CSV file.
@@ -224,16 +224,16 @@ First we'll create a type to represent the data from one row of the file (i.e. a
             NewCasesBySpecimenDate: float
         }
 
-Next up is a function to read that data from an actual CSV row.  I found that some rows (including the first one) had blanks which I've replaced with zero values.
+Next up is a function to read that data from an actual CSV row.  Unfortunately we have to specify the UK culture to correctly read the dates.  I found that some rows (including the first one) had blanks which I've replaced with zero values.
 
-Yes, the number of cases per day is really an integer, but I decided to store everything as floats to keep things simple.
+Of course the number of cases per day is really an integer, but I decided to store everything as floats to keep things simple.
 
     let private readRow (row: CsvRow) =
         let newCasesBySpecimenDate = row?newCasesBySpecimenDate
 
         {
             ONSCode = ONSCode row?areaCode
-            Date = row?date.AsDateTime()
+            Date = row?date.AsDateTime(cultureInfo = CultureInfo("en-GB"))
             NewCasesBySpecimenDate = 
                 if String.IsNullOrWhiteSpace(newCasesBySpecimenDate) then 0.0 else newCasesBySpecimenDate.AsFloat()
         }
@@ -245,7 +245,7 @@ As there are something like 120k rows in the original data, there's a filter so 
     let read (filepath: string) startDate endDate =
 
         let dateFilter (row: CsvRow) =
-            let date = row?date.AsDateTime()
+            let date = row?date.AsDateTime(cultureInfo = CultureInfo("en-GB"))
             date >= startDate && date <= endDate
 
         let csv = CsvFile.Load(filepath)
